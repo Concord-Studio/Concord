@@ -53,7 +53,8 @@ function World.new()
 
       __isWorld = true,
 
-      __ignoreEmits = false
+      __ignoreEmits = false,
+      __flushing = false,
    }, World.__mt)
 
    -- Optimization: We deep copy the World class into our instance of a world.
@@ -140,14 +141,28 @@ function World:__dirtyEntity(e)
    end
 end
 
--- Internal: Flushes all changes to Entities.
+--- Returns whether a Flush can currently be performed.
+-- Flushing is forbidden while a Flush is already in progress
+-- (for example from World:onEntityAdded / Pool:onAdded).
+-- @treturn boolean
+function World:canFlush()
+   return not self.__flushing
+end
+
+--- Flushes all changes to Entities.
 -- This processes all entities. Adding and removing entities, as well as reevaluating dirty entities.
 -- @treturn World self
-function World:__flush()
+function World:flush()
+   if not self:canFlush() then
+      Utils.error(2, "bad call to 'World:flush' (cannot flush during a flush)")
+   end
+
    -- Early out
    if (self.__added.size == 0 and self.__removed.size == 0 and self.__dirty.size == 0) then
       return self
    end
+
+   self.__flushing = true
 
    -- Switch buffers
    self.__added,   self.__backAdded   = self.__backAdded,   self.__added
@@ -200,6 +215,8 @@ function World:__flush()
       end
    end
    self.__backDirty:clear()
+
+   self.__flushing = false
 
    return self
 end
@@ -310,15 +327,17 @@ end
 
 --- Emits a callback in the World.
 -- Calls all functions with the functionName of added Systems
+-- Automatically flushes before forwarding the event, unless this emit is nested
+-- or a flush is already in progress.
 -- @string functionName Name of functions to call.
 -- @param ... Parameters passed to System's functions
 -- @treturn World self
 function World:emit(functionName, ...)
+   local shouldFlush = self.__emitSDepth == 0 and self:canFlush()
+
    if not functionName or type(functionName) ~= "string" then
       Utils.error(2, "bad argument #1 to 'World:emit' (String expected, got %s)", type(functionName))
    end
-
-   local shouldFlush = self.__emitSDepth == 0
 
    self.__emitSDepth = self.__emitSDepth + 1
 
@@ -328,7 +347,14 @@ function World:emit(functionName, ...)
       self.__ignoreEmits = true
       local preventDefaults = self:beforeEmit(functionName, listeners, ...)
       self.__ignoreEmits = false
-      if preventDefaults then return end
+      if preventDefaults then
+         self.__emitSDepth = self.__emitSDepth - 1
+         return self
+      end
+   end
+
+   if shouldFlush then
+      self:flush()
    end
 
    if listeners then
@@ -336,10 +362,6 @@ function World:emit(functionName, ...)
          local listener = listeners[i]
 
          if (listener.system.__enabled) then
-            if (shouldFlush) then
-               self:__flush()
-            end
-
             listener.callback(listener.system, ...)
          end
       end
@@ -356,6 +378,19 @@ function World:emit(functionName, ...)
    return self
 end
 
+--- Emits a callback in the World without flushing.
+-- @see World:emit
+-- @string functionName Name of functions to call.
+-- @param ... Parameters passed to System's functions
+-- @treturn World self
+function World:emitNoFlush(functionName, ...)
+   local flushing = self.__flushing
+   self.__flushing = true
+   self:emit(functionName, ...)
+   self.__flushing = flushing
+   return self
+end
+
 --- Removes all entities from the World
 -- @treturn World self
 function World:clear()
@@ -369,7 +404,7 @@ function World:clear()
    end
    self.__added:clear()
 
-   self:__flush()
+   self:flush()
 
    return self
 end
@@ -383,7 +418,7 @@ function World:getSystems()
 end
 
 function World:serialize(ignoreKeys)
-   self:__flush()
+   self:flush()
 
    local data = { generator = self.__hash.state }
 
@@ -428,7 +463,7 @@ function World:deserialize(data, startClean, ignoreGenerator)
       entities[i]:deserialize(data[i])
    end
 
-   self:__flush()
+   self:flush()
 
    return self
 end
