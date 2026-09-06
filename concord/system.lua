@@ -45,21 +45,30 @@ System.mt = {
    end,
 }
 --- Creates a new SystemClass.
--- @param table filters A table containing filters (name = {components...})
+-- @string name Name of the System
+-- @tparam table definition A table containing filters (name = {components...})
 -- @treturn System A new SystemClass
-function System.new(definition)
+function System.new(name, definition)
+   if type(name) == "table" then
+      definition = name
+      name = nil
+   elseif name ~= nil and type(name) ~= "string" then
+      Utils.error(2, "bad argument #1 to 'System.new' (string expected, got %s)", type(name))
+   end
+
    definition = definition or {}
 
-   for name, def in pairs(definition) do
-      if type(name) ~= 'string' then
-         Utils.error(2, "invalid name for filter (string key expected, got %s)", type(name))
+   for filterName, def in pairs(definition) do
+      if type(filterName) ~= 'string' then
+         Utils.error(2, "invalid name for filter (string key expected, got %s)", type(filterName))
       end
 
-      Filter.validate(0, name, def)
+      Filter.validate(0, filterName, def)
    end
 
    local systemClass = setmetatable({
       __definition = definition,
+      __name = name,
 
       __isSystemClass = true,
    }, System.mt)
