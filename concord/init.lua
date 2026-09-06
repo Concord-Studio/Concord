@@ -1,12 +1,12 @@
 ---
 -- @module Concord
 
-local PATH = (...):gsub('%.init$', '')
+local PATH = (...):gsub("%.init$", "")
 
 local Concord = {
-   _VERSION     = "3.0",
-   _DESCRIPTION = "A feature-complete ECS library",
-   _LICENCE     = [[
+	_VERSION = "3.0",
+	_DESCRIPTION = "A feature-complete ECS library",
+	_LICENCE = [[
       MIT LICENSE
 
       Copyright (c) 2020 Justin van der Leij / Tjakka5
@@ -29,14 +29,21 @@ local Concord = {
       CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
       TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
       SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-   ]]
+   ]],
 }
 
-Concord.entity     = require(PATH..".entity")
-Concord.component  = require(PATH..".component")
-Concord.components = require(PATH..".components")
-Concord.system     = require(PATH..".system")
-Concord.world      = require(PATH..".world")
-Concord.utils      = require(PATH..".utils")
+Concord.Entity = require(PATH .. ".entity")
+Concord.Component = require(PATH .. ".component")
+Concord.Components = require(PATH .. ".components")
+Concord.System = require(PATH .. ".system")
+Concord.World = require(PATH .. ".world")
+Concord.utils = require(PATH .. ".utils")
+
+-- Compatibility aliases, deprecated in favor of uppercase names
+Concord.entity = Concord.Entity
+Concord.component = Concord.Component
+Concord.components = Concord.Components
+Concord.system = Concord.System
+Concord.world = Concord.World
 
 return Concord
