@@ -1,15 +1,20 @@
---- Utils
--- Helper module for misc operations
+--- Helper module for misc operations
+-- @module Utils
 
 local Utils = {}
 
+--- Raises a formatted error.
+-- @int level Error level passed to error(), plus one
+-- @string str Format string
+-- @param ... Format arguments
 function Utils.error(level, str, ...)
     error(string.format(str, ...), level + 1)
 end
 
---- Does a shallow copy of a table and appends it to a target table.
--- @param orig Table to copy
--- @param target Table to append to
+--- Copies keys from orig into target. Existing keys in target are overwritten.
+-- @tparam table orig Table to copy from
+-- @tparam table target Table to copy into
+-- @treturn table target
 function Utils.shallowCopy(orig, target)
    for key, value in pairs(orig) do
       target[key] = value
@@ -18,12 +23,14 @@ function Utils.shallowCopy(orig, target)
    return target
 end
 
---- Requires files and puts them in a table.
--- Accepts a table of paths to Lua files: {"path/to/file_1", "path/to/another/file_2", "etc"}
--- Accepts a path to a directory with Lua files: "my_files/here"
--- @param pathOrFiles The table of paths or a path to a directory.
--- @param namespace A table that will hold the required files
--- @treturn table The namespace table
+--- Requires files and stores them in a namespace table.
+-- Accepts a table of require paths: {"path/to/file_1", "path/to/another/file_2", "etc"}
+-- Accepts a path to a directory of Lua files: "my_files/here"
+-- Directory loading uses love.filesystem and requires LÖVE.
+-- If namespace is omitted, files are still required and this function returns nil.
+-- @param pathOrFiles A directory path or a table of require paths
+-- @tparam[opt] table namespace Table that will hold the required files
+-- @treturn table|nil The namespace table
 function Utils.loadNamespace(pathOrFiles, namespace)
    if type(pathOrFiles) ~= "string" and type(pathOrFiles) ~= "table" then
        Utils.error(2, "bad argument #1 to 'loadNamespace' (string/table of strings expected, got %s)", type(pathOrFiles))

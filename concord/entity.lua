@@ -13,6 +13,7 @@ local Builtins   = require(PATH..".builtins.init") --luacheck: ignore
 -- Builtins is unused but the require already registers the Components
 
 local Entity = {
+   --- If true, new Entities are given a "serializable" Component.
    SERIALIZE_BY_DEFAULT = true,
 }
 
@@ -20,7 +21,8 @@ Entity.__mt = {
    __index = Entity,
 }
 
---- Creates a new Entity. Optionally adds it to a World.
+--- Creates a new Entity. Optionally queues it to be added to a World.
+-- If Entity.SERIALIZE_BY_DEFAULT is true, the Entity is given a "serializable" Component.
 -- @tparam[opt] World world World to add the entity to
 -- @treturn Entity A new Entity
 function Entity.new(world)
@@ -121,25 +123,25 @@ local function removeComponent(e, name)
 end
 
 --- Gives an Entity a Component.
--- If the Component already exists, it's overridden by this new Component
--- @tparam Component componentClass ComponentClass to add an instance of
--- @param ... additional arguments to pass to the Component's populate function
+-- If the Component already exists, it's overridden by this new Component.
+-- @tparam string|Component name Name of the ComponentClass, or a Component instance to copy onto the Entity
+-- @param ... additional arguments to pass to the Component's populate function (ignored when copying a Component)
 -- @treturn Entity self
 function Entity:give(name, ...)
    return giveComponent(self, false, name, ...)
 end
 
---- Ensures an Entity to have a Component.
--- If the Component already exists, no action is taken
--- @tparam Component componentClass ComponentClass to add an instance of
--- @param ... additional arguments to pass to the Component's populate function
+--- Ensures an Entity has a Component.
+-- If the Component already exists, no action is taken.
+-- @tparam string|Component name Name of the ComponentClass, or a Component instance to copy onto the Entity
+-- @param ... additional arguments to pass to the Component's populate function (ignored when copying a Component)
 -- @treturn Entity self
 function Entity:ensure(name, ...)
    return giveComponent(self, true, name, ...)
 end
 
 --- Removes a Component from an Entity.
--- @tparam Component componentClass ComponentClass of the Component to remove
+-- @string name Name of the ComponentClass to remove
 -- @treturn Entity self
 function Entity:remove(name)
    local ok, componentClass = Components.try(name)
@@ -168,8 +170,8 @@ function Entity:assemble(assemblage, ...)
 end
 
 --- Destroys the Entity.
--- Removes the Entity from its World if it's in one.
--- @return self
+-- Queues removal from its World if it's in one. The Entity stays in the World until the next flush.
+-- @treturn Entity self
 function Entity:destroy()
    if self.__world then
       self.__world:removeEntity(self)
@@ -189,7 +191,7 @@ function Entity:__dirty()
 end
 
 --- Returns true if the Entity has a Component.
--- @tparam Component componentClass ComponentClass of the Component to check
+-- @string name Name of the ComponentClass to check
 -- @treturn boolean
 function Entity:has(name)
    local ok, componentClass = Components.try(name)
@@ -202,8 +204,8 @@ function Entity:has(name)
 end
 
 --- Gets a Component from the Entity.
--- @tparam Component componentClass ComponentClass of the Component to get
--- @treturn table
+-- @string name Name of the ComponentClass to get
+-- @treturn Component|nil The Component, or nil if the Entity does not have it
 function Entity:get(name)
    local ok, componentClass = Components.try(name)
 
@@ -214,10 +216,11 @@ function Entity:get(name)
    return self[name]
 end
 
---- Returns a table of all Components the Entity has.
--- Warning: Do not modify this table.
--- Use Entity:give/ensure/remove instead
--- @treturn table Table of all Components the Entity has
+--- Returns a shallow copy of the Entity's fields, excluding __world and __isEntity.
+-- This is primarily the Entity's Components. Extra non-component fields are also copied.
+-- Mutating a copied Component still mutates the Entity's Component.
+-- @tparam[opt] table output Table to copy into. A new table is created if omitted.
+-- @treturn table
 function Entity:getComponents(output)
    output = output or {}
    local components = Utils.shallowCopy(self, output)
@@ -227,7 +230,8 @@ function Entity:getComponents(output)
    return components
 end
 
---- Returns true if the Entity is in a World.
+--- Returns true if the Entity has been assigned a World.
+-- True as soon as addition is queued, and remains true until removal is flushed.
 -- @treturn boolean
 function Entity:inWorld()
    return self.__world and true or false
@@ -239,6 +243,10 @@ function Entity:getWorld()
    return self.__world
 end
 
+--- Serializes the Entity's Components.
+-- Components that return nil from serialize are omitted.
+-- @tparam[opt] boolean ignoreKey If true, the key Component is omitted
+-- @treturn table Serialized Entity data
 function Entity:serialize(ignoreKey)
    local data = {}
 
@@ -262,6 +270,8 @@ function Entity:serialize(ignoreKey)
    return data
 end
 
+--- Deserializes Components onto the Entity.
+-- @tparam table data Serialized Entity data
 function Entity:deserialize(data)
    for i = 1, #data do
       local componentData = data[i]

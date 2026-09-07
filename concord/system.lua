@@ -1,5 +1,5 @@
---- Iterates over Entities. From these Entities its get Components and modify them.
--- A System contains 1 or more Pools.
+--- Iterates over Entities. From these Entities it gets Components and modifies them.
+-- A System contains 0 or more Pools.
 -- A System is contained by 1 World.
 -- @classmod System
 
@@ -25,9 +25,9 @@ System.mt = {
          __isSystemClass = false, -- Overwrite value from systemClass
       }, systemClass)
 
-      -- Optimization: We deep copy the System class into our instance of a system.
+      -- Optimization: We shallow copy the System class into our instance of a system.
       -- This grants slightly faster access times at the cost of memory.
-      -- Since there (generally) won't be many instances of worlds this is a worthwhile tradeoff
+      -- Since there (generally) won't be many instances of systems this is a worthwhile tradeoff
       if (System.ENABLE_OPTIMIZATION) then
          Utils.shallowCopy(systemClass, system)
       end
@@ -45,8 +45,8 @@ System.mt = {
    end,
 }
 --- Creates a new SystemClass.
--- @string name Name of the System
--- @tparam table definition A table containing filters (name = {components...})
+-- @tparam[opt] string name Name of the System. If omitted, or if a table is passed first, the first argument is the definition.
+-- @tparam[opt] table definition A table containing filters (name = {components...})
 -- @treturn System A new SystemClass
 function System.new(name, definition)
    if type(name) == "table" then
@@ -74,9 +74,9 @@ function System.new(name, definition)
    }, System.mt)
    systemClass.__index = systemClass
 
-   -- Optimization: We deep copy the World class into our instance of a world.
+   -- Optimization: We shallow copy the System class into the SystemClass.
    -- This grants slightly faster access times at the cost of memory.
-   -- Since there (generally) won't be many instances of worlds this is a worthwhile tradeoff
+   -- Since there (generally) won't be many instances of systems this is a worthwhile tradeoff
    if (System.ENABLE_OPTIMIZATION) then
       Utils.shallowCopy(System, systemClass)
    end
@@ -118,7 +118,7 @@ function System:__clear()
    return self
 end
 
---- Sets if the System is enabled
+--- Sets whether the System is enabled.
 -- @tparam boolean enable
 -- @treturn System self
 function System:setEnabled(enable)
@@ -133,7 +133,7 @@ function System:setEnabled(enable)
    return self
 end
 
---- Returns is the System is enabled
+--- Returns whether the System is enabled.
 -- @treturn boolean
 function System:isEnabled()
    return self.__enabled

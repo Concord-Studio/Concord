@@ -11,8 +11,9 @@ Component.__mt = {
    __index = Component,
 }
 
---- Creates a new ComponentClass.
--- @tparam function populate Function that populates a Component with values
+--- Creates a new ComponentClass and registers it by name.
+-- @string name Unique name of the ComponentClass
+-- @tparam[opt] function populate Function that populates a Component with values
 -- @treturn Component A new ComponentClass
 function Component.new(name, populate)
    if (type(name) ~= "string") then
@@ -51,11 +52,13 @@ end
 function Component:__populate() -- luacheck: ignore
 end
 
--- Callback: When the Component gets removed or replaced in an Entity.
-function Component:removed() -- luacheck: ignore
+--- Callback: When the Component gets removed or replaced in an Entity.
+-- @tparam boolean replaced True when the Component is being overwritten, false when it is being removed
+function Component:removed(replaced) -- luacheck: ignore
 end
 
--- Callback: When the Component gets serialized as part of an Entity.
+--- Callback: When the Component gets serialized as part of an Entity.
+-- @treturn table|nil Serialized data, or nil to omit this Component
 function Component:serialize()
    local data = Utils.shallowCopy(self, {})
 
@@ -68,7 +71,8 @@ function Component:serialize()
    return data
 end
 
--- Callback: When the Component gets deserialized from serialized data.
+--- Callback: When the Component gets deserialized from serialized data.
+-- @tparam table data Serialized data to copy onto this Component
 function Component:deserialize(data)
    Utils.shallowCopy(data, self)
 end
@@ -95,7 +99,7 @@ end
 function Component:__initialize(entity, ...)
    local component = self:__new(entity)
 
-   ---@diagnostic disable-next-line: redundant-parameter
+   -- LuaLS: redundant-parameter (varargs forwarded to populate)
    self.__populate(component, ...)
 
    return component

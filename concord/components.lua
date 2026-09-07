@@ -6,7 +6,7 @@ local Components = {}
 Components.__REJECT_PREFIX = "!"
 Components.__REJECT_MATCH = "^(%"..Components.__REJECT_PREFIX.."?)(.+)"
 
---- Returns true if the containter has the ComponentClass with the specified name
+--- Returns true if the container has the ComponentClass with the specified name
 -- @string name Name of the ComponentClass to check
 -- @treturn boolean
 function Components.has(name)
@@ -27,10 +27,10 @@ end
 --- Returns true and the ComponentClass if one was registered with the specified name
 -- or false and an error otherwise
 -- @string name Name of the ComponentClass to check
--- @boolean acceptRejected Whether to accept names prefixed with the Reject Prefix.
--- @treturn boolean
--- @treturn Component or error string
--- @treturn true if acceptRejected was true and the name had the Reject Prefix, false otherwise.
+-- @tparam[opt] boolean acceptRejected Whether to accept names prefixed with the Reject Prefix.
+-- @treturn boolean ok
+-- @treturn Component|string ComponentClass on success, or an error string on failure
+-- @treturn string|boolean On success: the stripped Component name if the name had the Reject Prefix, otherwise false
 function Components.try(name, acceptRejected)
    if type(name) ~= "string" then
       return false, "ComponentsClass name is expected to be a string, got "..type(name)..")"
@@ -54,7 +54,7 @@ end
 
 --- Returns the ComponentClass with the specified name
 -- @string name Name of the ComponentClass to get
--- @treturn Component
+-- @treturn Component The registered ComponentClass
 function Components.get(name)
    local ok, value = Components.try(name)
 

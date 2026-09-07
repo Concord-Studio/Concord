@@ -1,10 +1,10 @@
-# Concord
+# Getting Started
 
 Concord is a feature complete library that allows you to use Entity - Component - System (ECS) model  to write and organize your Lua code.
 
 Concord puts a lot of effort on being easy to use and provide a great developer experience, while trying to be competitive in performance with alternative libraries.
 
-## Getting Started
+## Installation
 
 As a first step you will need to download this repository and add the `concord` folder to your project.
 

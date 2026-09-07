@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Concord</h1>
+
+
+<ul>
+  <li><a href="../index.html">Getting Started</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#It_s_a_trend">It's a trend </a></li>
+<li><a href="#It_doesn_t_rely_on_inheritance">It doesn't rely on inheritance </a></li>
+<li><a href="#It_s_faster">It's faster </a></li>
+<li><a href="#It_s_more_organized">It's more organized </a></li>
+</ul>
+
+
+<h2>Guides</h2>
+<ul class="nowrap">
+  <li><a href="../index.html">Getting Started</a></li>
+  <li><strong>Why ECS? Why Concord?</strong></li>
+  <li><a href="../guides/Custom-Pools.md.html">Custom Pools</a></li>
+  <li><a href="../guides/Pool-Flushing-and-Timing.md.html">Pool Flushing and Timing</a></li>
+</ul>
+<h2>Builtin Components</h2>
+<ul class="nowrap">
+  <li><a href="../builtins/key.html">key</a></li>
+  <li><a href="../builtins/serializable.html">serializable</a></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/Components.html">Components</a></li>
+  <li><a href="../modules/Type.html">Type</a></li>
+  <li><a href="../modules/Utils.html">Utils</a></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Component.html">Component</a></li>
+  <li><a href="../classes/Entity.html">Entity</a></li>
+  <li><a href="../classes/Filter.html">Filter</a></li>
+  <li><a href="../classes/List.html">List</a></li>
+  <li><a href="../classes/System.html">System</a></li>
+  <li><a href="../classes/World.html">World</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+
+<h1>Why ECS? Why Concord?</h1>
+
+<p>There are various reasons why people choose ECS for their projects, there is a very large <a href="https://github.com/SanderMertens/ecs-faq">FAQ for ECS</a> made by the author of <a href="https://github.com/SanderMertens/flecs">FLECS</a>, but we can go through some of the reasons here as a starting point:</p>
+
+<p><a name="It_s_a_trend"></a></p>
+<h2>It's a trend</h2>
+
+<p>Yeah it's a trend, most game engines are moving towards ECS as their pattern of choice, big names in the industry are using the pattern and more people are following this trend (<a href="https://unity.com/ecs">Unity</a>, <a href="https://dev.epicgames.com/community/learning/talks-and-demos/37Oz/large-numbers-of-entities-with-mass-in-unreal-engine-5">Unreal Engine</a>, <a href="https://www.youtube.com/watch?v=W3aieHjyNvw">Overwatch (video)</a>, etc).</p>
+
+<p>This is not a good reason to use Concord but it does help that more and more documentation is being written about ECS and how to use it to organize your game code.</p>
+
+<p>But this is also a downside, ECS is NOW being used by more game engines, but OOP has been the king for way longer and is more prevalent and used in this market.</p>
+
+<p>Concord isn't here as part of the trend, and doesn't intend to follow what other ECS frameworks do. It instead presents it's own interpretation of ECS and makes a heavy focus on the ease of use and development.</p>
+
+<p><a name="It_doesn_t_rely_on_inheritance"></a></p>
+<h2>It doesn't rely on inheritance</h2>
+
+<p>So to follow this discussion, a reason people choose ECS is so that they can get away from the ugly parts of OOP.</p>
+
+<p>The ugly part being <a href="https://en.wikipedia.org/wiki/Inheritance_(object-oriented_programming">inheritance and all the problems it comes with</a>. A possible solution would be mixins or decorators, but most people agree that the problems are still there.</p>
+
+<p>So that's when they start to consider <a href="https://en.wikipedia.org/wiki/Composition_over_inheritance">composition over inheritance</a>. This is a very common pattern in OOP where you <a href="https://en.wikipedia.org/wiki/Object_composition">put objects inside objects</a> instead of trying to define their behavior in term of inheritance. And ECS is very close to this pattern, remember how we put Components inside of our Entities? That's composition.</p>
+
+<p>But in "Composition over inheritance" we would still define our behaviors in our objects, and we would still need to <a href="https://en.wikipedia.org/wiki/Delegation_(object-oriented_programming">forward our events to each component</a>. So that's when people start to consider ECS, behaviors existing outside of the object/entity helps organize the code more neatly.</p>
+
+<p>Concord does make use of OOP and the <a href="https://en.wikipedia.org/wiki/Metaprogramming">metaprogramming</a> functionality in Lua, to help implements ECS, and does still allow you to work with Components and Systems as if they were objects. So if you are escaping from the "bad parts" of OOP, your OOP knowledge will not be wasted while using Concord.</p>
+
+<p><a name="It_s_faster"></a></p>
+<h2>It's faster</h2>
+
+<p>Well this is the argument most game engines make to sell you ECS as the best architecture.</p>
+
+<p>Remember our behaviors and data are stored separately? This helps keep our data small.
+Remember how we don't make distinction between entities and instead rely on filtering? This allows us to pack our entities close together in memory so that we don't have to jump around so much when looping through them in our systems.</p>
+
+<p>Unfortunately this doesn't apply to Concord because in Lua land we can't benefit from all of this, our representation of Components, Entities and Pools don't provide an advantage towards objects. Yeah Concord is fast for the majority of use cases, but this is not its selling point. You can probably write faster code without a library, and there are plenty alternatives that focus on speed.</p>
+
+<p>Lua although fast, is not used for optimization purposes, and the same applies to Concord. Concord tries to be reliable, easy to use and feature complete, it is not an optimization.</p>
+
+<p>We actually made <a href="https://github.com/Keyslam/Sniper">an experiment</a> making a super efficient ECS library, but it was awful to code with and one line of code could throw all the optimizations away. In our opinion, although it's possible to make a super-fast ECS library and speed does make a huge difference, it's not worth it when working in Lua where JIT optimization is hard</p>
+
+<h3>Reminds me of Functional Programming</h3>
+
+<p>If you have tried <a href="https://elmprogramming.com/elm-architecture-conclusion.html">"The Elm Architecture"</a> or <a href="https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow#redux-application-data-flow">"Redux"</a> you may find the unidirectional data flow in ECS familiar.</p>
+
+<p>If we think about our Entities and Components as our Model or State, and Systems as our Update or Reducers.
+The only way to mutate our Model/State is through an Event processed by our Update/Reducer</p>
+
+<p>This <a href="https://en.wikipedia.org/wiki/Unidirectional_Data_Flow_%28computer_science%29">unidirectional data flow</a> and the concept of using <a href="https://en.wikipedia.org/wiki/Fold_%28higher-order_function%29">reducer functions</a> as a way to update state is a proven concept and widely used in Functional Programming.</p>
+
+<p>This mental model has worked really well for Front-end Web developers, and is a very good way to reason about how our systems update over time while keeping our state as our only source of truth and purely as data. If you are already familiar with these architecture you'll be able to pick up Concord and ECS in general, with relative ease.</p>
+
+<p>In addition to that, if we combine ECS with <a href="https://en.wikipedia.org/wiki/Persistent_data_structure">immutable data structures</a> for Components and Entities, then we wouldn't be too far away from "The Elm Architecture" and all its benefits like <a href="https://elm-lang.org/news/time-travel-made-easy">Time Traveling debugging</a>.</p>
+
+<p>Unfortunately immutable data structures aren't cheap and the Lua garbage collector is not tuned for them.
+Concord doesn't use immutable data structures, but if you treat your Components as just data, it does allow you to recover state through serialization and deserialization.</p>
+
+<p><a name="It_s_more_organized"></a></p>
+<h2>It's more organized</h2>
+
+<p>If you find this mental model intuitive and start to reason only through this paradigm you'll find yourself writing code in a more structured way. There are very specific ways to do things in ECS and Concord will push you towards these patterns.</p>
+
+<p>This is however at the expense of a higher learning curve with a big payoff in maintainability and reusability of your code. Concord keeps this risk low by allowing you to write code outside of Concord without extra hurdles.</p>
+
+<p>In the long run we hope you'll find yourself at home using Concord, without needing these escape hatches, in order to accomplish this we try to ease this learning curve through guides, documentation and tooling that will hopefully make working with Concord a great experience.</p>
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2026-09-06 21:32:30 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

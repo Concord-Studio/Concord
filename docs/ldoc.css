@@ -294,6 +294,7 @@ pre .library { color: #0e7c6b; }
 pre .marker { color: #512b1e; background: #fedc56; font-weight: bold; }
 pre .string { color: #8080ff; }
 pre .number { color: #f8660d; }
+pre .function-name { color: #60447f; }
 pre .operator { color: #2239a8; font-weight: bold; }
 pre .preprocessor, pre .prepro { color: #a33243; }
 pre .global { color: #800080; }
@@ -301,3 +302,56 @@ pre .user-keyword { color: #800080; }
 pre .prompt { color: #558817; }
 pre .url { color: #272fc2; text-decoration: underline; }
 
+
+/* Guide callouts and details */
+
+aside.callout {
+    margin: 1em 0;
+    padding: 0.75em 1em;
+    border-radius: 4px;
+    border-left: 4px solid #0969da;
+    background: #e7f1fb;
+}
+
+aside.callout-note { border-left-color: #0969da; background: #e7f1fb; }
+aside.callout-tip { border-left-color: #1a7f37; background: #e6f6eb; }
+aside.callout-important { border-left-color: #8250df; background: #f1e9fb; }
+aside.callout-warning { border-left-color: #9a6700; background: #fff4d1; }
+aside.callout-caution { border-left-color: #cf222e; background: #ffe8ea; }
+
+aside.callout::before {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.35em;
+}
+
+aside.callout-note::before { content: "Note"; }
+aside.callout-tip::before { content: "Tip"; }
+aside.callout-important::before { content: "Important"; }
+aside.callout-warning::before { content: "Warning"; }
+aside.callout-caution::before { content: "Caution"; }
+
+aside.callout p {
+    margin: 0.4em 0 0 0;
+}
+
+aside.callout p:first-child {
+    margin-top: 0;
+}
+
+details {
+    margin: 1em 0;
+    padding: 0.75em 1em;
+    background: #f7f7f7;
+    border: 1px solid #c0c0c0;
+    border-radius: 4px;
+}
+
+details summary {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+details[open] summary {
+    margin-bottom: 0.6em;
+}

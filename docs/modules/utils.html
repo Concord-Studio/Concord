@@ -26,8 +26,9 @@
 <br/>
 <h1>Concord</h1>
 
+
 <ul>
-  <li><a href="../index.html">Index</a></li>
+  <li><a href="../index.html">Getting Started</a></li>
 </ul>
 
 <h2>Contents</h2>
@@ -39,39 +40,55 @@
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/Components.html">Components</a></li>
-  <li><a href="../modules/Concord.html">Concord</a></li>
-  <li><a href="../modules/type.html">type</a></li>
-  <li><strong>utils</strong></li>
+  <li><a href="../modules/Type.html">Type</a></li>
+  <li><strong>Utils</strong></li>
+</ul>
+<h2>Builtin Components</h2>
+<ul class="nowrap">
+  <li><a href="../builtins/key.html">key</a></li>
+  <li><a href="../builtins/serializable.html">serializable</a></li>
 </ul>
 <h2>Classes</h2>
 <ul class="nowrap">
   <li><a href="../classes/Component.html">Component</a></li>
   <li><a href="../classes/Entity.html">Entity</a></li>
+  <li><a href="../classes/Filter.html">Filter</a></li>
   <li><a href="../classes/List.html">List</a></li>
-  <li><a href="../classes/Pool.html">Pool</a></li>
   <li><a href="../classes/System.html">System</a></li>
   <li><a href="../classes/World.html">World</a></li>
+</ul>
+<h2>Guides</h2>
+<ul class="nowrap">
+  <li><a href="../index.html">Getting Started</a></li>
+  <li><a href="../guides/Why-ECS.md.html">Why ECS? Why Concord?</a></li>
+  <li><a href="../guides/Custom-Pools.md.html">Custom Pools</a></li>
+  <li><a href="../guides/Pool-Flushing-and-Timing.md.html">Pool Flushing and Timing</a></li>
 </ul>
 
 </div>
 
 <div id="content">
 
-<h1>Module <code>utils</code></h1>
-<p>Utils
- Helper module for misc operations</p>
-<p></p>
+<h1>Module <code>Utils</code></h1>
+<p>Helper module for misc operations</p>
+<p>
+
+</p>
 
 
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Utils.shallowCopy">Utils.shallowCopy (orig, target)</a></td>
-	<td class="summary">Does a shallow copy of a table and appends it to a target table.</td>
+	<td class="name" nowrap><a href="#error">error (level, str, ...)</a></td>
+	<td class="summary">Raises a formatted error.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Utils.loadNamespace">Utils.loadNamespace (pathOrFiles, namespace)</a></td>
-	<td class="summary">Requires files and puts them in a table.</td>
+	<td class="name" nowrap><a href="#shallowCopy">shallowCopy (orig, target)</a></td>
+	<td class="summary">Copies keys from orig into target.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#loadNamespace">loadNamespace (pathOrFiles[, namespace])</a></td>
+	<td class="summary">Requires files and stores them in a namespace table.</td>
 	</tr>
 </table>
 
@@ -83,20 +100,25 @@
 
     <dl class="function">
     <dt>
-    <a name = "Utils.shallowCopy"></a>
-    <strong>Utils.shallowCopy (orig, target)</strong>
+    <a name = "error"></a>
+    <strong>error (level, str, ...)</strong>
     </dt>
     <dd>
-    Does a shallow copy of a table and appends it to a target table.
+    Raises a formatted error.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">orig</span>
-         Table to copy
+        <li><span class="parameter">level</span>
+            <span class="types"><span class="type">integer</span></span>
+         Error level passed to error(), plus one
         </li>
-        <li><span class="parameter">target</span>
-         Table to append to
+        <li><span class="parameter">str</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+         Format string
+        </li>
+        <li><span class="parameter">...</span>
+         Format arguments
         </li>
     </ul>
 
@@ -106,29 +128,64 @@
 
 </dd>
     <dt>
-    <a name = "Utils.loadNamespace"></a>
-    <strong>Utils.loadNamespace (pathOrFiles, namespace)</strong>
+    <a name = "shallowCopy"></a>
+    <strong>shallowCopy (orig, target)</strong>
     </dt>
     <dd>
-    Requires files and puts them in a table.
- Accepts a table of paths to Lua files: {"path/to/file_1", "path/to/another/file_2", "etc"}
- Accepts a path to a directory with Lua files: "my_files/here"
+    Copies keys from orig into target.  Existing keys in target are overwritten.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">pathOrFiles</span>
-         The table of paths or a path to a directory.
+        <li><span class="parameter">orig</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a></span>
+         Table to copy from
         </li>
-        <li><span class="parameter">namespace</span>
-         A table that will hold the required files
+        <li><span class="parameter">target</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a></span>
+         Table to copy into
         </li>
     </ul>
 
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a></span>
+        target
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "loadNamespace"></a>
+    <strong>loadNamespace (pathOrFiles[, namespace])</strong>
+    </dt>
+    <dd>
+    Requires files and stores them in a namespace table.
+ Accepts a table of require paths: {"path/to/file<em>1", "path/to/another/file</em>2", "etc"}
+ Accepts a path to a directory of Lua files: "my_files/here"
+ Directory loading uses love.filesystem and requires LÖVE.
+ If namespace is omitted, files are still required and this function returns nil.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pathOrFiles</span>
+         A directory path or a table of require paths
+        </li>
+        <li><span class="parameter">namespace</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a></span>
+         Table that will hold the required files
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a> or <span class="type">nil</span></span>
         The namespace table
     </ol>
 
@@ -137,13 +194,11 @@
 
 </dd>
 </dl>
-
-
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-08-18 15:20:32 </i>
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2026-09-06 21:32:30 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

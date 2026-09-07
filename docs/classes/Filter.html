@@ -1,0 +1,508 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Concord</h1>
+
+
+<ul>
+  <li><a href="../index.html">Getting Started</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Methods">Methods</a></li>
+</ul>
+
+
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Component.html">Component</a></li>
+  <li><a href="../classes/Entity.html">Entity</a></li>
+  <li><strong>Filter</strong></li>
+  <li><a href="../classes/List.html">List</a></li>
+  <li><a href="../classes/System.html">System</a></li>
+  <li><a href="../classes/World.html">World</a></li>
+</ul>
+<h2>Builtin Components</h2>
+<ul class="nowrap">
+  <li><a href="../builtins/key.html">key</a></li>
+  <li><a href="../builtins/serializable.html">serializable</a></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/Components.html">Components</a></li>
+  <li><a href="../modules/Type.html">Type</a></li>
+  <li><a href="../modules/Utils.html">Utils</a></li>
+</ul>
+<h2>Guides</h2>
+<ul class="nowrap">
+  <li><a href="../index.html">Getting Started</a></li>
+  <li><a href="../guides/Why-ECS.md.html">Why ECS? Why Concord?</a></li>
+  <li><a href="../guides/Custom-Pools.md.html">Custom Pools</a></li>
+  <li><a href="../guides/Pool-Flushing-and-Timing.md.html">Pool Flushing and Timing</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Class <code>Filter</code></h1>
+<p>Used to filter Entities with specific Components
+ A Filter has an associated Pool that can contain any amount of Entities.</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Methods">Methods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#filter:validate">filter:validate (errorLevel[, name], def[, onComponent])</a></td>
+	<td class="summary">Validates a Filter Definition to make sure every component is valid.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter:parse">filter:parse ([name], def)</a></td>
+	<td class="summary">Parses a Filter Definition into a single interleaved table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter:match">filter:match (e, filter)</a></td>
+	<td class="summary">Returns true if the Entity matches a parsed Filter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter:isValidPool">filter:isValidPool (name, pool)</a></td>
+	<td class="summary">Checks that a custom Pool implements add, remove, has, and clear as callables.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter:new">filter:new (name, def)</a></td>
+	<td class="summary">Creates a new Filter
+ If definition.constructor is set, it is called with the definition to create the Pool.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter:eligible">filter:eligible (e)</a></td>
+	<td class="summary">Checks if an Entity fulfills the Filter requirements.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter:evaluate">filter:evaluate (e)</a></td>
+	<td class="summary">Evaluates an Entity against this Filter and updates the Pool.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter:add">filter:add (e[, bypass])</a></td>
+	<td class="summary">Adds an Entity to the Pool, if it passes the Filter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter:remove">filter:remove (e)</a></td>
+	<td class="summary">Removes an Entity from the Pool associated to this Filter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter:clear">filter:clear (e)</a></td>
+	<td class="summary">Clears the Pool associated to this Filter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter:has">filter:has (e)</a></td>
+	<td class="summary">Checks if the Pool associated to this Filter contains the passed Entity.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#filter:getName">filter:getName ()</a></td>
+	<td class="summary">Gets the name of the Filter</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Methods"></a>Methods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "filter:validate"></a>
+    <strong>filter:validate (errorLevel[, name], def[, onComponent])</strong>
+    </dt>
+    <dd>
+    Validates a Filter Definition to make sure every component is valid.
+ Also checks that def.constructor is callable when present, unless onComponent is provided.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">errorLevel</span>
+            <span class="types"><span class="type">integer</span></span>
+         Extra stack level added to error reports
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+         Name for the Filter. If omitted, errors refer to a World:query filter.
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">def</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a></span>
+         Table containing the Filter Definition
+        </li>
+        <li><span class="parameter">onComponent</span>
+            <span class="types"><span class="type">function</span></span>
+         Called with (component, reject) when a component is valid.
+ reject is the stripped Component name when the entry had the Reject Prefix, otherwise false.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter:parse"></a>
+    <strong>filter:parse ([name], def)</strong>
+    </dt>
+    <dd>
+    Parses a Filter Definition into a single interleaved table.
+ Entries are stored as name, required pairs: {name, true, name, false, ...}
+ where true means the Component is required and false means it is rejected.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+         Name for the Filter.
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">def</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a></span>
+         Table containing the Filter Definition
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a></span>
+        Parsed filter
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter:match"></a>
+    <strong>filter:match (e, filter)</strong>
+    </dt>
+    <dd>
+    Returns true if the Entity matches a parsed Filter.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">e</span>
+            <span class="types"><a class="type" href="../classes/Entity.html#">Entity</a></span>
+         Entity to check
+        </li>
+        <li><span class="parameter">filter</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a></span>
+         Parsed filter from Filter.parse
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter:isValidPool"></a>
+    <strong>filter:isValidPool (name, pool)</strong>
+    </dt>
+    <dd>
+    Checks that a custom Pool implements add, remove, has, and clear as callables.
+ The Pool may be a table, userdata, lightuserdata, or cdata.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+         Name of the Filter / Pool
+        </li>
+        <li><span class="parameter">pool</span>
+         Pool returned by a custom constructor
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter:new"></a>
+    <strong>filter:new (name, def)</strong>
+    </dt>
+    <dd>
+    Creates a new Filter
+ If definition.constructor is set, it is called with the definition to create the Pool.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+         Name for the Filter.
+        </li>
+        <li><span class="parameter">def</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a></span>
+         Table containing the Filter Definition
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><a class="type" href="../classes/Filter.html#">Filter</a></span>
+        The new Filter</li>
+        <li>
+           <span class="types"><span class="type">Pool</span></span>
+        The associated Pool</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter:eligible"></a>
+    <strong>filter:eligible (e)</strong>
+    </dt>
+    <dd>
+    Checks if an Entity fulfills the Filter requirements.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">e</span>
+            <span class="types"><a class="type" href="../classes/Entity.html#">Entity</a></span>
+         Entity to check
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter:evaluate"></a>
+    <strong>filter:evaluate (e)</strong>
+    </dt>
+    <dd>
+    Evaluates an Entity against this Filter and updates the Pool.
+ Adds the Entity if it became eligible, removes it if it no longer is.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">e</span>
+            <span class="types"><a class="type" href="../classes/Entity.html#">Entity</a></span>
+         Entity to evaluate
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="../classes/Filter.html#">Filter</a></span>
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter:add"></a>
+    <strong>filter:add (e[, bypass])</strong>
+    </dt>
+    <dd>
+    Adds an Entity to the Pool, if it passes the Filter.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">e</span>
+            <span class="types"><a class="type" href="../classes/Entity.html#">Entity</a></span>
+         Entity to add
+        </li>
+        <li><span class="parameter">bypass</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Whether to bypass the Filter or not.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><a class="type" href="../classes/Filter.html#">Filter</a></span>
+        self</li>
+        <li>
+           <span class="types"><span class="type">boolean</span></span>
+        Whether the entity was added or not.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter:remove"></a>
+    <strong>filter:remove (e)</strong>
+    </dt>
+    <dd>
+    Removes an Entity from the Pool associated to this Filter.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">e</span>
+            <span class="types"><a class="type" href="../classes/Entity.html#">Entity</a></span>
+         Entity to remove
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="../classes/Filter.html#">Filter</a></span>
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter:clear"></a>
+    <strong>filter:clear (e)</strong>
+    </dt>
+    <dd>
+    Clears the Pool associated to this Filter.
+ Arguments are forwarded to the Pool's clear method.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">e</span>
+         Forwarded to pool:clear
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="../classes/Filter.html#">Filter</a></span>
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter:has"></a>
+    <strong>filter:has (e)</strong>
+    </dt>
+    <dd>
+    Checks if the Pool associated to this Filter contains the passed Entity.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">e</span>
+            <span class="types"><a class="type" href="../classes/Entity.html#">Entity</a></span>
+         Entity to check
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Whether the Entity exists.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "filter:getName"></a>
+    <strong>filter:getName ()</strong>
+    </dt>
+    <dd>
+    Gets the name of the Filter
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+</dl>
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2026-09-06 21:32:30 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

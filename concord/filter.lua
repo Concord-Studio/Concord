@@ -16,9 +16,12 @@ Filter.__mt = {
 }
 
 --- Validates a Filter Definition to make sure every component is valid.
--- @string name Name for the Filter.
--- @tparam table definition Table containing the Filter Definition
--- @tparam onComponent Optional function, called when a component is valid.
+-- Also checks that def.constructor is callable when present, unless onComponent is provided.
+-- @int errorLevel Extra stack level added to error reports
+-- @tparam[opt] string name Name for the Filter. If omitted, errors refer to a World:query filter.
+-- @tparam table def Table containing the Filter Definition
+-- @tparam[opt] function onComponent Called with (component, reject) when a component is valid.
+-- reject is the stripped Component name when the entry had the Reject Prefix, otherwise false.
 function Filter.validate (errorLevel, name, def, onComponent)
    local filter = "World:query filter"
    if name then
@@ -46,13 +49,12 @@ function Filter.validate (errorLevel, name, def, onComponent)
    end
 end
 
---- Parses the Filter Defintion into two tables
--- required: An array of all the required component names.
--- rejected: An array of all the components that will be rejected.
--- @string name Name for the Filter.
--- @tparam table definition Table containing the Filter Definition
--- @treturn table required
--- @treturn table rejected
+--- Parses a Filter Definition into a single interleaved table.
+-- Entries are stored as name, required pairs: {name, true, name, false, ...}
+-- where true means the Component is required and false means it is rejected.
+-- @tparam[opt] string name Name for the Filter.
+-- @tparam table def Table containing the Filter Definition
+-- @treturn table Parsed filter
 function Filter.parse (name, def)
    local filter = {}
 
@@ -69,6 +71,10 @@ function Filter.parse (name, def)
    return filter
 end
 
+--- Returns true if the Entity matches a parsed Filter.
+-- @tparam Entity e Entity to check
+-- @tparam table filter Parsed filter from Filter.parse
+-- @treturn boolean
 function Filter.match (e, filter)
    for i=#filter, 2, -2 do
       local match = filter[i - 0]
@@ -83,6 +89,10 @@ end
 local REQUIRED_METHODS = {"add", "remove", "has", "clear"}
 local VALID_POOL_TYPES = {table=true, userdata=true, lightuserdata=true, cdata=true}
 
+--- Checks that a custom Pool implements add, remove, has, and clear as callables.
+-- The Pool may be a table, userdata, lightuserdata, or cdata.
+-- @string name Name of the Filter / Pool
+-- @param pool Pool returned by a custom constructor
 function Filter.isValidPool (name, pool)
    local poolType = type(pool)
    --Check that pool is not nil
@@ -99,8 +109,9 @@ function Filter.isValidPool (name, pool)
 end
 
 --- Creates a new Filter
+-- If definition.constructor is set, it is called with the definition to create the Pool.
 -- @string name Name for the Filter.
--- @tparam table definition Table containing the Filter Definition
+-- @tparam table def Table containing the Filter Definition
 -- @treturn Filter The new Filter
 -- @treturn Pool The associated Pool
 function Filter.new (name, def)
@@ -134,6 +145,10 @@ function Filter:eligible(e)
    return Filter.match(e, self.__filter)
 end
 
+--- Evaluates an Entity against this Filter and updates the Pool.
+-- Adds the Entity if it became eligible, removes it if it no longer is.
+-- @tparam Entity e Entity to evaluate
+-- @treturn Filter self
 function Filter:evaluate (e)
    local has  = self.pool:has(e)
    local eligible = self:eligible(e)
@@ -148,9 +163,9 @@ function Filter:evaluate (e)
 end
 
 
--- Adds an Entity to the Pool, if it passes the Filter.
--- @param e Entity to add
--- @param bypass Whether to bypass the Filter or not.
+--- Adds an Entity to the Pool, if it passes the Filter.
+-- @tparam Entity e Entity to add
+-- @tparam[opt] boolean bypass Whether to bypass the Filter or not.
 -- @treturn Filter self
 -- @treturn boolean Whether the entity was added or not.
 function Filter:add (e, bypass)
@@ -163,24 +178,25 @@ function Filter:add (e, bypass)
    return self, true
 end
 
--- Remove an Entity from the Pool associated to this Filter.
--- @param e Entity to remove
+--- Removes an Entity from the Pool associated to this Filter.
+-- @tparam Entity e Entity to remove
 -- @treturn Filter self
 function Filter:remove (e)
    self.pool:remove(e)
    return self
 end
 
--- Clear the Pool associated to this Filter.
--- @param e Entity to remove
+--- Clears the Pool associated to this Filter.
+-- Arguments are forwarded to the Pool's clear method.
+-- @param e Forwarded to pool:clear
 -- @treturn Filter self
 function Filter:clear (e)
    self.pool:clear(e)
    return self
 end
 
--- Check if the Pool bound to this System contains the passed Entity
--- @param e Entity to check
+--- Checks if the Pool associated to this Filter contains the passed Entity.
+-- @tparam Entity e Entity to check
 -- @treturn boolean Whether the Entity exists.
 function Filter:has (e)
    return self.pool:has(e)

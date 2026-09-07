@@ -17,13 +17,13 @@ local Concord = require("path.to.concord")
 
 ## Documentation
 
-Start with **[Get Started](docs/Get%20Started.md)**. It covers Worlds, Components, Entities, Filters, Systems, and Events.
+Start with **[Getting Started](docs/index.html)**. It covers Worlds, Components, Entities, Filters, Systems, and Events.
 
 ### Guides
 
-- [Why ECS?](docs/Why%20ECS.md) — when Concord (and ECS in general) is a good fit
-- [Custom Pools](docs/Custom%20Pools.md) — using a different data structure than the default Pool list
-- [Pool Flushing and Timing](docs/Pool%20Flushing%20and%20Timing.md) — when Filters update, and how that interacts with Events
+- [Why ECS?](docs/guides/Why-ECS.md.html) — when Concord (and ECS in general) is a good fit
+- [Custom Pools](docs/guides/Custom-Pools.md.html) — using a different data structure than the default Pool list
+- [Pool Flushing and Timing](docs/guides/Pool-Flushing-and-Timing.md.html) — when Filters update, and how that interacts with Events
 
 API reference is generated with LDoc and published on the [GitHub page](https://keyslam-group.github.io/Concord/).
 

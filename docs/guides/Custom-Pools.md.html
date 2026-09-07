@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Reference</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Concord</h1>
+
+
+<ul>
+  <li><a href="../index.html">Getting Started</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Lists_upsides_and_downsides">Lists upsides and downsides </a></li>
+<li><a href="#List_Synchronization_Duplication">List Synchronization/Duplication </a></li>
+<li><a href="#Bring_your_own_data_structure">Bring your own data structure </a></li>
+</ul>
+
+
+<h2>Guides</h2>
+<ul class="nowrap">
+  <li><a href="../index.html">Getting Started</a></li>
+  <li><a href="../guides/Why-ECS.md.html">Why ECS? Why Concord?</a></li>
+  <li><strong>Custom Pools</strong></li>
+  <li><a href="../guides/Pool-Flushing-and-Timing.md.html">Pool Flushing and Timing</a></li>
+</ul>
+<h2>Builtin Components</h2>
+<ul class="nowrap">
+  <li><a href="../builtins/key.html">key</a></li>
+  <li><a href="../builtins/serializable.html">serializable</a></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/Components.html">Components</a></li>
+  <li><a href="../modules/Type.html">Type</a></li>
+  <li><a href="../modules/Utils.html">Utils</a></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Component.html">Component</a></li>
+  <li><a href="../classes/Entity.html">Entity</a></li>
+  <li><a href="../classes/Filter.html">Filter</a></li>
+  <li><a href="../classes/List.html">List</a></li>
+  <li><a href="../classes/System.html">System</a></li>
+  <li><a href="../classes/World.html">World</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+
+<h1>Custom Pools</h1>
+
+<p>This article details a escape hatch when the List used by Concord Pools is not enough for your System's need.</p>
+
+<p>First we need to understand why this escape hatch is needed so we discuss some upsides and downsides of Lists, we then discuss the solution based on onAdded/onRemoved that Pools provide, and finally look at the escape hatch and its benefits.</p>
+
+<p><a name="Lists_upsides_and_downsides"></a></p>
+<h2>Lists upsides and downsides</h2>
+
+<p>Pools in Concord by default use a List implementation that provides fast inserts, fast removals, fast search and fast iteration.</p>
+
+<p>These are all useful for Pools:</p>
+
+<ul>
+    <li>Pools need to check if an Entity is part of the List or not.</li>
+    <li>Pools need to add and remove Entities quickly</li>
+    <li>The user needs to be able to iterate through the Pool quickly.</li>
+</ul>
+
+<p>However these Lists have a few downsides:</p>
+
+<ul>
+    <li>They consume some extra memory because they need to keep a value -> key hashmap</li>
+    <li>They can't guarantee the order of their members</li>
+    <li>Sorting is expensive, since the hashmap needs to be regenerated</li>
+</ul>
+
+<p><a name="List_Synchronization_Duplication"></a></p>
+<h2>List Synchronization/Duplication</h2>
+
+<p>Sometimes you need to add your Entities to a different data structure like a Spatial Hash for Physics for example, when working with such a structure, you may end up with code that looks like this:</p>
+
+
+<pre>
+<span class="keyword">local</span> Physics = Concord.<span class="function-name">System</span>(<span class="string">"Physics"</span>, {
+  boxes = {<span class="string">"position"</span>, <span class="string">"size"</span>}
+})
+
+<span class="keyword">function</span> Physics:<span class="function-name">init</span> ()
+  <span class="comment">-- Create a new spatial hash
+</span>  <span class="keyword">local</span> spatialhash = <span class="function-name">spatialhash</span>()
+  self.spatialhash = spatialhash
+
+  <span class="comment">-- Whenever there is a new box added to the boxes list
+</span>  <span class="comment">-- Add the box to the spatial hash
+</span>  <span class="keyword">function</span> self.boxes:<span class="function-name">onAdded</span> (entity)
+    spatialhash:<span class="function-name">add</span>(entity)
+  <span class="keyword">end</span>
+
+  <span class="comment">-- Do the same when a box is removed
+</span>  <span class="keyword">function</span> self.boxes:<span class="function-name">onRemoved</span> (entity)
+    spatialhash:<span class="function-name">remove</span>(entity)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre>
+
+
+<p>Another fairly common example would be if you wanted a Sorted List for Rendering, and don't want the extra cost of sorting the List on each Event and instead would prefer to sort on insertion.</p>
+
+<p>As you can see we have duplication of data, our Spatial Hash has all the same Entities that our <code>boxes</code> List. And now the code to sync the List with the Spatial Hash lives inside of the Physics System, which makes it hard to share or reuse.</p>
+
+<p>So Concord offers an escape hatch out of this situation. If you only need the filtering part of a Pool and not the List part, you can bring your own data structure.</p>
+
+<p><a name="Bring_your_own_data_structure"></a></p>
+<h2>Bring your own data structure</h2>
+
+<p>This feature is called <strong>Custom Pools</strong></p>
+
+<p>The way to define a Custom Pool is fairly simple. You need to create a function that returns an object with 4 methods: <code>has</code>, <code>add</code>, <code>remove</code> and <code>clear</code></p>
+
+<p>We could redo our example above by creating a Custom Pool wrapper for our Spatial Hash (this is not always needed but may be helpful if the method names or their parameters don't match)</p>
+
+
+<pre>
+<span class="keyword">function</span> <span class="function-name">SpatialHashPool</span> ()
+  <span class="keyword">local</span> storage = {hash = <span class="function-name">spatialhash</span>()}
+
+  <span class="keyword">function</span> storage:<span class="function-name">clear</span>()
+    self.hash = <span class="function-name">spatialhash</span>()
+  <span class="keyword">end</span>
+
+  <span class="keyword">function</span> storage:<span class="function-name">add</span>(entity)
+    self.hash:<span class="function-name">add</span>(entity)
+  <span class="keyword">end</span>
+
+  <span class="keyword">function</span> storage:<span class="function-name">remove</span>(entity)
+    self.hash:<span class="function-name">remove</span>(entity)
+  <span class="keyword">end</span>
+
+  <span class="keyword">function</span> storage:<span class="function-name">has</span>(entity)
+    <span class="keyword">if</span> self.hash:<span class="function-name">search</span>(entity) &gt; <span class="number">0</span> <span class="keyword">then</span>
+      <span class="keyword">return</span> <span class="keyword">true</span>
+    <span class="keyword">else</span>
+      <span class="keyword">return</span> <span class="keyword">false</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+
+  <span class="keyword">return</span> storage
+<span class="keyword">end</span>
+</pre>
+
+
+<p>Then we can use this in any System like so</p>
+
+
+<pre>
+<span class="keyword">local</span> Physics = Concord.<span class="function-name">System</span>(<span class="string">"Physics"</span>, {
+  boxes = {<span class="string">"position"</span>, <span class="string">"size"</span>, constructor = SpatialHashPool}
+})
+</pre>
+
+
+<p>Please note that the code now lives outside of the Physics System and can now be reused by different Systems or even different projects. This abstraction helps us share and reuse code.</p>
+
+<h3>Additional Methods</h3>
+
+<p>The Storage we defined only exposes the methods needed by Concord which means that in order to iterate or perform other iterations you would need to use <code>self.boxes.hash</code> to access the Spatial Hash directly. However Concord does not enforce any limit on the methods exposed by your Pool other than those 4 required methods, so you could expose more utility functions that you need to access in your System's code.</p>
+
+<p>For example we could add</p>
+
+
+<pre>
+<span class="keyword">function</span> storage:<span class="function-name">query</span>(x, y, w, h)
+  <span class="keyword">return</span> self.hash:<span class="function-name">query</span>(x, y, w, h)
+<span class="keyword">end</span>
+</pre>
+
+
+<p>And use it in our System like so:</p>
+
+
+<pre>
+<span class="keyword">function</span> Physics:<span class="function-name">update</span>(dt)
+  <span class="keyword">local</span> visibleEntities = self.boxes:<span class="function-name">query</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">800</span>, <span class="number">600</span>)
+
+  <span class="keyword">for</span> _, entity <span class="keyword">in</span> <span class="global">ipairs</span>(visibleEntities) <span class="keyword">do</span>
+    <span class="comment">-- Do something
+</span>  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre>
+
+
+<h3>Pool definition</h3>
+
+<p>One advantage Custom Pools have is that when they are instantiated you get the complete Filter definition for the Pool as argument to the constructor function:</p>
+
+
+<pre>
+<span class="keyword">function</span> <span class="function-name">SpatialHashPool</span> (def)
+  <span class="global">print</span>(def) <span class="comment">-- {"position", "size"}
+</span>
+  <span class="comment">-- ...
+</span><span class="keyword">end</span>
+</pre>
+
+
+<p>This could be useful if you need some additional parameters to generate your storage for example</p>
+
+
+<pre>
+<span class="keyword">function</span> <span class="function-name">SpatialHashPool</span> (def)
+  <span class="keyword">local</span> storage = { hash = <span class="function-name">spatialhash</span>(def.width, def.height) }
+
+  <span class="comment">-- ...
+</span>
+  <span class="keyword">return</span> storage
+<span class="keyword">end</span>
+
+<span class="comment">-------
+</span>
+<span class="keyword">local</span> Physics = Concord.<span class="function-name">System</span>(<span class="string">"Physics"</span>, {
+  boxes = {<span class="string">"position"</span>, <span class="string">"size"</span>, constructor = SpatialHashPool, width = <span class="number">800</span>, height = <span class="number">600</span>}
+})
+</pre>
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2026-09-06 21:32:30 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

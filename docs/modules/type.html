@@ -26,8 +26,9 @@
 <br/>
 <h1>Concord</h1>
 
+
 <ul>
-  <li><a href="../index.html">Index</a></li>
+  <li><a href="../index.html">Getting Started</a></li>
 </ul>
 
 <h2>Contents</h2>
@@ -39,55 +40,75 @@
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/Components.html">Components</a></li>
-  <li><a href="../modules/Concord.html">Concord</a></li>
-  <li><strong>type</strong></li>
-  <li><a href="../modules/utils.html">utils</a></li>
+  <li><strong>Type</strong></li>
+  <li><a href="../modules/Utils.html">Utils</a></li>
+</ul>
+<h2>Builtin Components</h2>
+<ul class="nowrap">
+  <li><a href="../builtins/key.html">key</a></li>
+  <li><a href="../builtins/serializable.html">serializable</a></li>
 </ul>
 <h2>Classes</h2>
 <ul class="nowrap">
   <li><a href="../classes/Component.html">Component</a></li>
   <li><a href="../classes/Entity.html">Entity</a></li>
+  <li><a href="../classes/Filter.html">Filter</a></li>
   <li><a href="../classes/List.html">List</a></li>
-  <li><a href="../classes/Pool.html">Pool</a></li>
   <li><a href="../classes/System.html">System</a></li>
   <li><a href="../classes/World.html">World</a></li>
+</ul>
+<h2>Guides</h2>
+<ul class="nowrap">
+  <li><a href="../index.html">Getting Started</a></li>
+  <li><a href="../guides/Why-ECS.md.html">Why ECS? Why Concord?</a></li>
+  <li><a href="../guides/Custom-Pools.md.html">Custom Pools</a></li>
+  <li><a href="../guides/Pool-Flushing-and-Timing.md.html">Pool Flushing and Timing</a></li>
 </ul>
 
 </div>
 
 <div id="content">
 
-<h1>Module <code>type</code></h1>
-<p>Type
- Helper module to do easy type checking for Concord types</p>
-<p></p>
+<h1>Module <code>Type</code></h1>
+<p>Helper module to do easy type checking for Concord types</p>
+<p>
+
+</p>
 
 
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Type.isEntity">Type.isEntity (t)</a></td>
+	<td class="name" nowrap><a href="#isCallable">isCallable (t)</a></td>
+	<td class="summary">Returns true if the value is a function or has a __call metamethod.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#isEntity">isEntity (t)</a></td>
 	<td class="summary">Returns if object is an Entity.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Type.isComponentClass">Type.isComponentClass (t)</a></td>
+	<td class="name" nowrap><a href="#isComponentClass">isComponentClass (t)</a></td>
 	<td class="summary">Returns if object is a ComponentClass.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Type.isComponent">Type.isComponent (t)</a></td>
+	<td class="name" nowrap><a href="#isComponent">isComponent (t)</a></td>
 	<td class="summary">Returns if object is a Component.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Type.isSystemClass">Type.isSystemClass (t)</a></td>
+	<td class="name" nowrap><a href="#isSystemClass">isSystemClass (t)</a></td>
 	<td class="summary">Returns if object is a SystemClass.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Type.isSystem">Type.isSystem (t)</a></td>
+	<td class="name" nowrap><a href="#isSystem">isSystem (t)</a></td>
 	<td class="summary">Returns if object is a System.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Type.isWorld">Type.isWorld (t)</a></td>
+	<td class="name" nowrap><a href="#isWorld">isWorld (t)</a></td>
 	<td class="summary">Returns if object is a World.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#isFilter">isFilter (t)</a></td>
+	<td class="summary">Returns if object is a Filter.</td>
 	</tr>
 </table>
 
@@ -99,8 +120,36 @@
 
     <dl class="function">
     <dt>
-    <a name = "Type.isEntity"></a>
-    <strong>Type.isEntity (t)</strong>
+    <a name = "isCallable"></a>
+    <strong>isCallable (t)</strong>
+    </dt>
+    <dd>
+    Returns true if the value is a function or has a __call metamethod.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+         Object to check
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "isEntity"></a>
+    <strong>isEntity (t)</strong>
     </dt>
     <dd>
     Returns if object is an Entity.
@@ -118,6 +167,8 @@
 
            <span class="types"><span class="type">boolean</span></span>
 
+
+
     </ol>
 
 
@@ -125,8 +176,8 @@
 
 </dd>
     <dt>
-    <a name = "Type.isComponentClass"></a>
-    <strong>Type.isComponentClass (t)</strong>
+    <a name = "isComponentClass"></a>
+    <strong>isComponentClass (t)</strong>
     </dt>
     <dd>
     Returns if object is a ComponentClass.
@@ -144,6 +195,8 @@
 
            <span class="types"><span class="type">boolean</span></span>
 
+
+
     </ol>
 
 
@@ -151,8 +204,8 @@
 
 </dd>
     <dt>
-    <a name = "Type.isComponent"></a>
-    <strong>Type.isComponent (t)</strong>
+    <a name = "isComponent"></a>
+    <strong>isComponent (t)</strong>
     </dt>
     <dd>
     Returns if object is a Component.
@@ -170,6 +223,8 @@
 
            <span class="types"><span class="type">boolean</span></span>
 
+
+
     </ol>
 
 
@@ -177,8 +232,8 @@
 
 </dd>
     <dt>
-    <a name = "Type.isSystemClass"></a>
-    <strong>Type.isSystemClass (t)</strong>
+    <a name = "isSystemClass"></a>
+    <strong>isSystemClass (t)</strong>
     </dt>
     <dd>
     Returns if object is a SystemClass.
@@ -196,6 +251,8 @@
 
            <span class="types"><span class="type">boolean</span></span>
 
+
+
     </ol>
 
 
@@ -203,8 +260,8 @@
 
 </dd>
     <dt>
-    <a name = "Type.isSystem"></a>
-    <strong>Type.isSystem (t)</strong>
+    <a name = "isSystem"></a>
+    <strong>isSystem (t)</strong>
     </dt>
     <dd>
     Returns if object is a System.
@@ -222,6 +279,8 @@
 
            <span class="types"><span class="type">boolean</span></span>
 
+
+
     </ol>
 
 
@@ -229,8 +288,8 @@
 
 </dd>
     <dt>
-    <a name = "Type.isWorld"></a>
-    <strong>Type.isWorld (t)</strong>
+    <a name = "isWorld"></a>
+    <strong>isWorld (t)</strong>
     </dt>
     <dd>
     Returns if object is a World.
@@ -248,6 +307,36 @@
 
            <span class="types"><span class="type">boolean</span></span>
 
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "isFilter"></a>
+    <strong>isFilter (t)</strong>
+    </dt>
+    <dd>
+    Returns if object is a Filter.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+         Object to check
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+
+
+
     </ol>
 
 
@@ -255,13 +344,11 @@
 
 </dd>
 </dl>
-
-
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-08-18 15:20:32 </i>
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2026-09-06 21:32:30 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

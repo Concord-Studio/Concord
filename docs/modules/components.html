@@ -26,8 +26,9 @@
 <br/>
 <h1>Concord</h1>
 
+
 <ul>
-  <li><a href="../index.html">Index</a></li>
+  <li><a href="../index.html">Getting Started</a></li>
 </ul>
 
 <h2>Contents</h2>
@@ -39,18 +40,29 @@
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><strong>Components</strong></li>
-  <li><a href="../modules/Concord.html">Concord</a></li>
-  <li><a href="../modules/type.html">type</a></li>
-  <li><a href="../modules/utils.html">utils</a></li>
+  <li><a href="../modules/Type.html">Type</a></li>
+  <li><a href="../modules/Utils.html">Utils</a></li>
+</ul>
+<h2>Builtin Components</h2>
+<ul class="nowrap">
+  <li><a href="../builtins/key.html">key</a></li>
+  <li><a href="../builtins/serializable.html">serializable</a></li>
 </ul>
 <h2>Classes</h2>
 <ul class="nowrap">
   <li><a href="../classes/Component.html">Component</a></li>
   <li><a href="../classes/Entity.html">Entity</a></li>
+  <li><a href="../classes/Filter.html">Filter</a></li>
   <li><a href="../classes/List.html">List</a></li>
-  <li><a href="../classes/Pool.html">Pool</a></li>
   <li><a href="../classes/System.html">System</a></li>
   <li><a href="../classes/World.html">World</a></li>
+</ul>
+<h2>Guides</h2>
+<ul class="nowrap">
+  <li><a href="../index.html">Getting Started</a></li>
+  <li><a href="../guides/Why-ECS.md.html">Why ECS? Why Concord?</a></li>
+  <li><a href="../guides/Custom-Pools.md.html">Custom Pools</a></li>
+  <li><a href="../guides/Pool-Flushing-and-Timing.md.html">Pool Flushing and Timing</a></li>
 </ul>
 
 </div>
@@ -59,17 +71,23 @@
 
 <h1>Module <code>Components</code></h1>
 <p>Container for registered ComponentClasses</p>
-<p></p>
+<p>
+
+</p>
 
 
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#has">has (name)</a></td>
-	<td class="summary">Returns true if the containter has the ComponentClass with the specified name</td>
+	<td class="summary">Returns true if the container has the ComponentClass with the specified name</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#try">try (name)</a></td>
+	<td class="name" nowrap><a href="#reject">reject (name)</a></td>
+	<td class="summary">Prefix a component's name with the currently set Reject Prefix</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#try">try (name[, acceptRejected])</a></td>
 	<td class="summary">Returns true and the ComponentClass if one was registered with the specified name
  or false and an error otherwise</td>
 	</tr>
@@ -91,13 +109,13 @@
     <strong>has (name)</strong>
     </dt>
     <dd>
-    Returns true if the containter has the ComponentClass with the specified name
+    Returns true if the container has the ComponentClass with the specified name
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
          Name of the ComponentClass to check
         </li>
     </ul>
@@ -106,6 +124,37 @@
     <ol>
 
            <span class="types"><span class="type">boolean</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "reject"></a>
+    <strong>reject (name)</strong>
+    </dt>
+    <dd>
+    Prefix a component's name with the currently set Reject Prefix
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+         Name of the ComponentClass to reject
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+
+
 
     </ol>
 
@@ -115,7 +164,7 @@
 </dd>
     <dt>
     <a name = "try"></a>
-    <strong>try (name)</strong>
+    <strong>try (name[, acceptRejected])</strong>
     </dt>
     <dd>
     Returns true and the ComponentClass if one was registered with the specified name
@@ -125,8 +174,13 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
          Name of the ComponentClass to check
+        </li>
+        <li><span class="parameter">acceptRejected</span>
+            <span class="types"><span class="type">boolean</span></span>
+         Whether to accept names prefixed with the Reject Prefix.
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -134,10 +188,13 @@
     <ol>
         <li>
            <span class="types"><span class="type">boolean</span></span>
-        </li>
+        ok</li>
         <li>
-           <span class="types"><a class="type" href="../classes/Component.html#">Component</a></span>
-        or error string</li>
+           <span class="types"><a class="type" href="../classes/Component.html#">Component</a> or <a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+        ComponentClass on success, or an error string on failure</li>
+        <li>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a> or <span class="type">boolean</span></span>
+        On success: the stripped Component name if the name had the Reject Prefix, otherwise false</li>
     </ol>
 
 
@@ -155,7 +212,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">name</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
          Name of the ComponentClass to get
         </li>
     </ul>
@@ -164,7 +221,7 @@
     <ol>
 
            <span class="types"><a class="type" href="../classes/Component.html#">Component</a></span>
-
+        The registered ComponentClass
     </ol>
 
 
@@ -172,13 +229,11 @@
 
 </dd>
 </dl>
-
-
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-08-18 15:20:32 </i>
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2026-09-06 21:32:30 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

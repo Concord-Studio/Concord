@@ -1,4 +1,4 @@
---- Data structure that allows for fast removal at the cost of containing order.
+--- Data structure that allows for fast removal at the cost of order.
 -- @classmod List
 
 local List = {}
@@ -32,7 +32,7 @@ end
 
 --- Removes an object from the List.
 -- @param obj Object to remove
--- @treturn List self
+-- @treturn List|nil self, or nil if the object was not in the List
 function List:remove(obj)
    local index = self[obj]
    if not index then return end
@@ -57,6 +57,7 @@ function List:remove(obj)
 end
 
 --- Clears the List completely.
+-- Does not call onRemoved.
 -- @treturn List self
 function List:clear()
    for i = 1, self.size do
@@ -86,6 +87,7 @@ function List:get(i)
 end
 
 --- Returns the index of an object in the List.
+-- Errors if the object is not in the List.
 -- @param obj Object to get index of
 -- @treturn number index of object in the List.
 function List:indexOf(obj)
@@ -98,7 +100,7 @@ end
 
 --- Sorts the List in place, using the order function.
 -- The order function is passed to table.sort internally so documentation on table.sort can be used as reference.
--- @param order Function that takes two Entities (a and b) and returns true if a should go before than b.
+-- @param order Function that takes two items (a and b) and returns true if a should go before b.
 -- @treturn List self
 function List:sort(order)
    table.sort(self, order)
@@ -115,7 +117,7 @@ end
 function List:onAdded (obj) --luacheck: ignore
 end
 
---- Callback for when an item is removed to the List.
+--- Callback for when an item is removed from the List.
 -- @param obj Object that was removed
 function List:onRemoved (obj) --luacheck: ignore
 end

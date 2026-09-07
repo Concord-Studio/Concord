@@ -1,8 +1,11 @@
---- Type
--- Helper module to do easy type checking for Concord types
+--- Helper module to do easy type checking for Concord types
+-- @module Type
 
 local Type = {}
 
+--- Returns true if the value is a function or has a __call metamethod.
+-- @param t Object to check
+-- @treturn boolean
 function Type.isCallable(t)
    if type(t) == "function" then return true end
 

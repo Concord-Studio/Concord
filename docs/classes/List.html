@@ -26,8 +26,9 @@
 <br/>
 <h1>Concord</h1>
 
+
 <ul>
-  <li><a href="../index.html">Index</a></li>
+  <li><a href="../index.html">Getting Started</a></li>
 </ul>
 
 <h2>Contents</h2>
@@ -40,17 +41,28 @@
 <ul class="nowrap">
   <li><a href="../classes/Component.html">Component</a></li>
   <li><a href="../classes/Entity.html">Entity</a></li>
+  <li><a href="../classes/Filter.html">Filter</a></li>
   <li><strong>List</strong></li>
-  <li><a href="../classes/Pool.html">Pool</a></li>
   <li><a href="../classes/System.html">System</a></li>
   <li><a href="../classes/World.html">World</a></li>
+</ul>
+<h2>Builtin Components</h2>
+<ul class="nowrap">
+  <li><a href="../builtins/key.html">key</a></li>
+  <li><a href="../builtins/serializable.html">serializable</a></li>
 </ul>
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="../modules/Components.html">Components</a></li>
-  <li><a href="../modules/Concord.html">Concord</a></li>
-  <li><a href="../modules/type.html">type</a></li>
-  <li><a href="../modules/utils.html">utils</a></li>
+  <li><a href="../modules/Type.html">Type</a></li>
+  <li><a href="../modules/Utils.html">Utils</a></li>
+</ul>
+<h2>Guides</h2>
+<ul class="nowrap">
+  <li><a href="../index.html">Getting Started</a></li>
+  <li><a href="../guides/Why-ECS.md.html">Why ECS? Why Concord?</a></li>
+  <li><a href="../guides/Custom-Pools.md.html">Custom Pools</a></li>
+  <li><a href="../guides/Pool-Flushing-and-Timing.md.html">Pool Flushing and Timing</a></li>
 </ul>
 
 </div>
@@ -58,39 +70,53 @@
 <div id="content">
 
 <h1>Class <code>List</code></h1>
-<p>Data structure that allows for fast removal at the cost of containing order.</p>
-<p></p>
+<p>Data structure that allows for fast removal at the cost of order.</p>
+<p>
+
+</p>
 
 
 <h2><a href="#Methods">Methods</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#List:new">List:new ()</a></td>
+	<td class="name" nowrap><a href="#list:new">list:new ()</a></td>
 	<td class="summary">Creates a new List.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#List:add">List:add (obj)</a></td>
+	<td class="name" nowrap><a href="#list:add">list:add (obj)</a></td>
 	<td class="summary">Adds an object to the List.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#List:remove">List:remove (obj)</a></td>
+	<td class="name" nowrap><a href="#list:remove">list:remove (obj)</a></td>
 	<td class="summary">Removes an object from the List.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#List:clear">List:clear ()</a></td>
+	<td class="name" nowrap><a href="#list:clear">list:clear ()</a></td>
 	<td class="summary">Clears the List completely.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#List:has">List:has (obj)</a></td>
+	<td class="name" nowrap><a href="#list:has">list:has (obj)</a></td>
 	<td class="summary">Returns true if the List has the object.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#List:get">List:get (i)</a></td>
+	<td class="name" nowrap><a href="#list:get">list:get (i)</a></td>
 	<td class="summary">Returns the object at an index.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#List:indexOf">List:indexOf (obj)</a></td>
+	<td class="name" nowrap><a href="#list:indexOf">list:indexOf (obj)</a></td>
 	<td class="summary">Returns the index of an object in the List.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#list:sort">list:sort (order)</a></td>
+	<td class="summary">Sorts the List in place, using the order function.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#list:onAdded">list:onAdded (obj)</a></td>
+	<td class="summary">Callback for when an item is added to the List.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#list:onRemoved">list:onRemoved (obj)</a></td>
+	<td class="summary">Callback for when an item is removed from the List.</td>
 	</tr>
 </table>
 
@@ -102,8 +128,8 @@
 
     <dl class="function">
     <dt>
-    <a name = "List:new"></a>
-    <strong>List:new ()</strong>
+    <a name = "list:new"></a>
+    <strong>list:new ()</strong>
     </dt>
     <dd>
     Creates a new List.
@@ -122,13 +148,13 @@
 
 </dd>
     <dt>
-    <a name = "List:add"></a>
-    <strong>List:add (obj)</strong>
+    <a name = "list:add"></a>
+    <strong>list:add (obj)</strong>
     </dt>
     <dd>
     Adds an object to the List.
  Object must be of reference type
- Object may not be the string 'size'
+ Object may not be the string 'size', 'onAdded' or 'onRemoved'
 
 
     <h3>Parameters:</h3>
@@ -150,8 +176,8 @@
 
 </dd>
     <dt>
-    <a name = "List:remove"></a>
-    <strong>List:remove (obj)</strong>
+    <a name = "list:remove"></a>
+    <strong>list:remove (obj)</strong>
     </dt>
     <dd>
     Removes an object from the List.
@@ -167,8 +193,8 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><a class="type" href="../classes/List.html#">List</a></span>
-        self
+           <span class="types"><a class="type" href="../classes/List.html#">List</a> or <span class="type">nil</span></span>
+        self, or nil if the object was not in the List
     </ol>
 
 
@@ -176,11 +202,12 @@
 
 </dd>
     <dt>
-    <a name = "List:clear"></a>
-    <strong>List:clear ()</strong>
+    <a name = "list:clear"></a>
+    <strong>list:clear ()</strong>
     </dt>
     <dd>
     Clears the List completely.
+ Does not call onRemoved.
 
 
 
@@ -196,8 +223,8 @@
 
 </dd>
     <dt>
-    <a name = "List:has"></a>
-    <strong>List:has (obj)</strong>
+    <a name = "list:has"></a>
+    <strong>list:has (obj)</strong>
     </dt>
     <dd>
     Returns true if the List has the object.
@@ -215,6 +242,8 @@
 
            <span class="types"><span class="type">boolean</span></span>
 
+
+
     </ol>
 
 
@@ -222,8 +251,8 @@
 
 </dd>
     <dt>
-    <a name = "List:get"></a>
-    <strong>List:get (i)</strong>
+    <a name = "list:get"></a>
+    <strong>list:get (i)</strong>
     </dt>
     <dd>
     Returns the object at an index.
@@ -248,11 +277,12 @@
 
 </dd>
     <dt>
-    <a name = "List:indexOf"></a>
-    <strong>List:indexOf (obj)</strong>
+    <a name = "list:indexOf"></a>
+    <strong>list:indexOf (obj)</strong>
     </dt>
     <dd>
     Returns the index of an object in the List.
+ Errors if the object is not in the List.
 
 
     <h3>Parameters:</h3>
@@ -273,14 +303,79 @@
 
 
 </dd>
+    <dt>
+    <a name = "list:sort"></a>
+    <strong>list:sort (order)</strong>
+    </dt>
+    <dd>
+    Sorts the List in place, using the order function.
+ The order function is passed to table.sort internally so documentation on table.sort can be used as reference.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">order</span>
+         Function that takes two items (a and b) and returns true if a should go before b.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="../classes/List.html#">List</a></span>
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "list:onAdded"></a>
+    <strong>list:onAdded (obj)</strong>
+    </dt>
+    <dd>
+    Callback for when an item is added to the List.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         Object that was added
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "list:onRemoved"></a>
+    <strong>list:onRemoved (obj)</strong>
+    </dt>
+    <dd>
+    Callback for when an item is removed from the List.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">obj</span>
+         Object that was removed
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
 </dl>
-
-
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-08-18 15:20:32 </i>
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2026-09-06 21:32:30 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

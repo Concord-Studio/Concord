@@ -27,21 +27,40 @@
 <h1>Concord</h1>
 
 
+<ul>
+  <li><strong>Getting Started</strong></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Installation">Installation </a></li>
+</ul>
 
 
+<h2>Guides</h2>
+<ul class="nowrap">
+  <li><strong>Getting Started</strong></li>
+  <li><a href="guides/Why-ECS.md.html">Why ECS? Why Concord?</a></li>
+  <li><a href="guides/Custom-Pools.md.html">Custom Pools</a></li>
+  <li><a href="guides/Pool-Flushing-and-Timing.md.html">Pool Flushing and Timing</a></li>
+</ul>
+<h2>Builtin Components</h2>
+<ul class="nowrap">
+  <li><a href="builtins/key.html">key</a></li>
+  <li><a href="builtins/serializable.html">serializable</a></li>
+</ul>
 <h2>Modules</h2>
 <ul class="nowrap">
   <li><a href="modules/Components.html">Components</a></li>
-  <li><a href="modules/Concord.html">Concord</a></li>
-  <li><a href="modules/type.html">type</a></li>
-  <li><a href="modules/utils.html">utils</a></li>
+  <li><a href="modules/Type.html">Type</a></li>
+  <li><a href="modules/Utils.html">Utils</a></li>
 </ul>
 <h2>Classes</h2>
 <ul class="nowrap">
   <li><a href="classes/Component.html">Component</a></li>
   <li><a href="classes/Entity.html">Entity</a></li>
+  <li><a href="classes/Filter.html">Filter</a></li>
   <li><a href="classes/List.html">List</a></li>
-  <li><a href="classes/Pool.html">Pool</a></li>
   <li><a href="classes/System.html">System</a></li>
   <li><a href="classes/World.html">World</a></li>
 </ul>
@@ -51,63 +70,255 @@
 <div id="content">
 
 
-  <h2>A feature-complete ECS library</h2>
+<h1>Getting Started</h1>
 
-<h2>Modules</h2>
-<table class="module_list">
-	<tr>
-		<td class="name"  nowrap><a href="modules/Components.html">Components</a></td>
-		<td class="summary">Container for registered ComponentClasses</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/Concord.html">Concord</a></td>
-		<td class="summary"></td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/type.html">type</a></td>
-		<td class="summary">Type
- Helper module to do easy type checking for Concord types</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/utils.html">utils</a></td>
-		<td class="summary">Utils
- Helper module for misc operations</td>
-	</tr>
-</table>
-<h2>Classes</h2>
-<table class="module_list">
-	<tr>
-		<td class="name"  nowrap><a href="classes/Component.html">Component</a></td>
-		<td class="summary">A pure data container that is contained by a single entity.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="classes/Entity.html">Entity</a></td>
-		<td class="summary">An object that exists in a world.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="classes/List.html">List</a></td>
-		<td class="summary">Data structure that allows for fast removal at the cost of containing order.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="classes/Pool.html">Pool</a></td>
-		<td class="summary">Used to iterate over Entities with a specific Components
- A Pool contain a any amount of Entities.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="classes/System.html">System</a></td>
-		<td class="summary">Iterates over Entities.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="classes/World.html">World</a></td>
-		<td class="summary">A collection of Systems and Entities.</td>
-	</tr>
-</table>
+<p>Concord is a feature complete library that allows you to use Entity - Component - System (ECS) model  to write and organize your Lua code.</p>
 
+<p>Concord puts a lot of effort on being easy to use and provide a great developer experience, while trying to be competitive in performance with alternative libraries.</p>
+
+<p><a name="Installation"></a></p>
+<h2>Installation</h2>
+
+<p>As a first step you will need to download this repository and add the <code>concord</code> folder to your project.</p>
+
+<p>In that folder you will find all the necessary files to use Concord.</p>
+
+<p>Once added you can import Concord in your code</p>
+
+
+<pre>
+<span class="keyword">local</span> Concord = <span class="global">require</span>(<span class="string">"path.to.concord"</span>)
+</pre>
+
+
+<aside class="callout callout-note">
+
+<p>Please note that the file imported should be <code>concord/init.lua</code>, some Lua runtimes will allow you to require <code>concord</code> but others will need <code>concord.init</code></p>
+
+</aside>
+
+<h3>World</h3>
+
+<p>The first thing you will define with Concord is a World.</p>
+
+<p>The World will provide a single interaction point for all our Systems, and will hold all our Entities.</p>
+
+<p>We will explain those concepts later, but first we need a World:</p>
+
+
+<pre>
+<span class="keyword">local</span> world = Concord.<span class="function-name">World</span>()
+</pre>
+
+
+<h3>Components</h3>
+
+<p>You can think of Components as the data and state that make up all of your game.
+Components themselves don't exist as part of our World, they instead are the pieces that build up Entities.</p>
+
+<p>Components have a name, and some arbitrary shape that you can define.
+For example if we wanted to store the Position of a given Entity, we would define a component called <code>position</code> with a shape that could be something like <code>{x: number, y: number}</code></p>
+
+<p>In Concord this would look like this:</p>
+
+
+<pre>
+Concord.<span class="function-name">Component</span>(<span class="string">"position"</span>, <span class="keyword">function</span> (component, x, y)
+  component.x = x
+  component.y = y
+<span class="keyword">end</span>)
+</pre>
+
+
+<p>The first argument is the name, and the second is what we call the <strong>populate</strong> function.
+Components start as empty tables and this <strong>populate</strong> function assigns the values for each of the Component properties.</p>
+
+<p>Sometimes you don't need to store data on the Component since the Component itself will act as a flag, in those cases you don't need to provide a <strong>populate</strong> function:</p>
+
+
+<pre>
+Concord.<span class="function-name">Component</span>(<span class="string">"terrestrial"</span>)
+</pre>
+
+
+<aside class="callout callout-note">
+
+<p>All Components are registered to Concord itself, not to a specific World.
+This is why all the Components you define, regardless of the World you use them in, MUST have different names, two different Components can't share a name.</p>
+
+</aside>
+
+<h3>Entities</h3>
+
+<p>In ECS everything that exists as part of the World is an Entity. An Entity could be a Player, an Enemy, a Crate, a Bullet, etc.</p>
+
+<p>Entities by themselves are empty packages with nothing on them, and they would all behave the same if we left them like that. To tell them appart and give unique data to each of them, we need to give them some Components.</p>
+
+<p>In Concord this is very simple:</p>
+
+
+<pre>
+<span class="keyword">local</span> Cat = world:<span class="function-name">newEntity</span>()
+<span class="comment">--local Cat = Concord.Entity(world) -- Alternative syntax
+</span>
+Cat:<span class="function-name">give</span>(<span class="string">"position"</span>, <span class="number">50</span>, <span class="number">50</span>)
+Cat:<span class="function-name">give</span>(<span class="string">"terrestrial"</span>)
+</pre>
+
+
+<p>Once you give a Component to an Entity, the Component will become a part of it:</p>
+
+
+<pre>
+<span class="global">print</span>(Cat.position.x, Cat.position.y) <span class="comment">-- Prints: 50, 50
+</span>
+<span class="keyword">if</span> Cat.terrestrial <span class="keyword">then</span> <span class="global">print</span>(<span class="string">"Walks!"</span>) <span class="keyword">end</span> <span class="comment">-- Prints: Walks! </span>
+</pre>
+
+
+<aside class="callout callout-note">
+
+<p>Any Component can be given to any Entity ONCE. You can't give a Component multiple times, giving the same Component one more time will override the previous instance of the Component.</p>
+
+</aside>
+
+<h3>Filters</h3>
+
+<p>The power of Concord and ECS in general comes from grouping a bunch of Entities based on rules. These rules acts as a Filter where we can ask the World for all Entities that have all the Components we required.</p>
+
+<p>For example we could ask the World for a list of all the Entities that are <code>terrestrial</code> and have a <code>position</code>, and that are not a <code>machine</code>:</p>
+
+
+<pre>
+<span class="keyword">local</span> animals = world:<span class="function-name">query</span>({ <span class="string">"terrestrial"</span>, <span class="string">"position"</span>, <span class="string">"!machine"</span> }) <span class="comment">-- The ! in front of machine indicates negation
+</span>
+<span class="keyword">for</span> i, entity <span class="keyword">in</span> <span class="global">ipairs</span>(animals) <span class="keyword">do</span>
+  <span class="global">print</span>(entity.position.x, entity.position.y)
+<span class="keyword">end</span>
+</pre>
+
+
+<details><summary>Side note on Filter rules</summary>
+
+<p>If we had another Entity like this one:</p>
+
+
+<pre>
+<span class="keyword">local</span> Parrot = world:<span class="function-name">newEntity</span>()
+
+Parrot:<span class="function-name">give</span>(<span class="string">"position"</span>, <span class="number">100</span>, <span class="number">100</span>)
+</pre>
+
+
+<p>It would not be part of our list above, since the filter required:</p>
+
+<p>_<code>terrestrial</code> and <code>position</code> and not <code>machine</code>_</p>
+
+<p>And although Parrot has <code>position</code> and doesn't have <code>machine</code>, it lacks the <code>terrestrial</code> Component.</p>
+
+</details>
+
+<p>This is great but the <a href="classes/World.html#world:query">World:query</a> operation is rather expensive, so Concord instead provides Pools.
+A Pool has an associated Filter and will be updated when Entities are added or modified in the World.</p>
+
+<p>In order to use pools however, we need to speak about Systems</p>
+
+<h3>Systems</h3>
+
+<p>In ECS, Components and Entities generally don't have behavior themselves, and instead rely on Systems that define how a group of Entities should behave.</p>
+
+<p>For example if we want all terrestrial animals to move 5 pixels to the right every time we receive a <code>move</code> event we would first create a System like:</p>
+
+
+<pre>
+<span class="keyword">local</span> Movement = Concord.<span class="function-name">System</span>(<span class="string">"Movement"</span>, {animals = { <span class="string">"terrestrial"</span>, <span class="string">"position"</span> }})
+</pre>
+
+
+<p>This system is called <code>Movement</code> and has a Pool called <code>animals</code> that contains all the Entities with <code>terrestrial</code> and <code>position</code> Components.</p>
+
+<p>We now want to receive all <code>move</code> events. To do that we define a callback in our System like so:</p>
+
+
+<pre>
+<span class="keyword">function</span> Movement:<span class="function-name">move</span> ()
+  <span class="keyword">for</span> i, entity <span class="keyword">in</span> <span class="global">ipairs</span>(self.animals) <span class="keyword">do</span>
+    entity.position.x = entity.position.x + <span class="number">5</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre>
+
+
+<p>Whenever we receive a <code>move</code> event in our World, this callback will execute, and the Movement System will iterate through the Pool of animals changing their position Components to move them 5 pixels to the right.</p>
+
+<h3>Events</h3>
+
+<p>In the previous section we defined a <code>move</code> callback, but we don't yet know how to execute that callback.</p>
+
+<p>To do that first the System needs to be added to our World</p>
+
+
+<pre>
+world:<span class="function-name">addSystem</span>(Movement)
+</pre>
+
+
+<aside class="callout callout-note">
+
+<p>You can add each System once to a given World.
+A System can be added to multiple Worlds (they will be different/separate instances of the System).</p>
+
+</aside>
+
+<p>Finally we need to fire the <code>move</code> event, to do that, we don't call the System directly, instead we emit the event to the World</p>
+
+
+<pre>
+world:<span class="function-name">emit</span>(<span class="string">"move"</span>)
+</pre>
+
+
+<p>Once emitted, all the Systems that define a <code>move</code> callback will be called in the order they were added to the World.</p>
+
+<p>You can also provide extra arguments to these events, for example if we had:</p>
+
+
+<pre>
+<span class="keyword">function</span> Movement:<span class="function-name">update</span>(dt)
+  <span class="comment">-- Do something here
+</span><span class="keyword">end</span>
+</pre>
+
+
+<p>You could provide the <code>dt</code> argument like so:</p>
+
+
+<pre>
+world:<span class="function-name">emit</span>(<span class="string">"update"</span>, <span class="number">5</span>) <span class="comment">--dt = 5</span>
+</pre>
+
+
+<h3>Summary</h3>
+
+<p>We defined a few big terms and how they are used in Concord, but to summarize them:</p>
+
+<ul>
+    <li><strong>World</strong>: This is where Entities and Systems live, it receives external and internal Events.</li>
+    <li><strong>Components</strong>: Data and state, each with a name and a shape. Each Component describes a specific aspect of an Entity.</li>
+    <li><strong>Entities</strong>: Everything that exists in the World. They are bundles of Components.</li>
+    <li><strong>Filters</strong>: A way to group Entities based on the Components they have or don't have.</li>
+    <li><strong>Systems</strong>: Behaviors that apply to groups of Entities and react to Events received by the World.</li>
+    <li><strong>Events</strong>: Signals that tell the World something happened or needs to happen, the World delegates the Events to all the Systems that can respond to it.</li>
+</ul>
+
+<p>These are Concord definitions, and although they may apply to other ECS libraries or frameworks, some differences may exist.</p>
+
+<p>With this we have covered the basics. With the API docs you would be ready to start working with Concord, but if you want to dig into more advanced concepts read some of our Guides instead.</p>
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-08-18 15:20:32 </i>
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2026-09-06 21:32:30 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

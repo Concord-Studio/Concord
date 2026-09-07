@@ -1,5 +1,11 @@
----
+--- A feature-complete ECS library.
 -- @module Concord
+-- @field Entity Entity class
+-- @field Component Component class
+-- @field Components Registry of ComponentClasses
+-- @field System System class
+-- @field World World class
+-- @field utils Utility functions
 
 local PATH = (...):gsub("%.init$", "")
 
