@@ -45,18 +45,20 @@ System.mt = {
    end,
 }
 --- Creates a new SystemClass.
--- @tparam[opt] string name Name of the System. If omitted, or if a table is passed first, the first argument is the definition.
+-- @tparam[opt] string name Name of the System. If the first argument is not a string, it is treated as the definition.
 -- @tparam[opt] table definition A table containing filters (name = {components...})
 -- @treturn System A new SystemClass
 function System.new(name, definition)
-   if type(name) == "table" then
-      definition = name
+   if type(name) ~= "string" then
+      definition = name or definition
       name = nil
-   elseif name ~= nil and type(name) ~= "string" then
-      Utils.error(2, "bad argument #1 to 'System.new' (string expected, got %s)", type(name))
    end
 
    definition = definition or {}
+
+   if type(definition) ~= "table" then
+      Utils.error(2, "bad argument to 'System.new' (definition table expected, got %s)", type(definition))
+   end
 
    for filterName, def in pairs(definition) do
       if type(filterName) ~= 'string' then
