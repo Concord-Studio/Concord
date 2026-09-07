@@ -52,31 +52,6 @@ end
 function Component:__populate() -- luacheck: ignore
 end
 
---- Callback: When the Component gets removed or replaced in an Entity.
--- @tparam boolean replaced True when the Component is being overwritten, false when it is being removed
-function Component:removed(replaced) -- luacheck: ignore
-end
-
---- Callback: When the Component gets serialized as part of an Entity.
--- @treturn table|nil Serialized data, or nil to omit this Component
-function Component:serialize()
-   local data = Utils.shallowCopy(self, {})
-
-   --This values shouldn't be copied over
-   data.__componentClass   = nil
-   data.__entity           = nil
-   data.__isComponent      = nil
-   data.__isComponentClass = nil
-
-   return data
-end
-
---- Callback: When the Component gets deserialized from serialized data.
--- @tparam table data Serialized data to copy onto this Component
-function Component:deserialize(data)
-   Utils.shallowCopy(data, self)
-end
-
 -- Internal: Creates a new Component.
 -- @param entity The Entity that will receive this Component.
 -- @return A new Component
@@ -115,6 +90,34 @@ end
 -- @treturn string
 function Component:getName()
    return self.__name
+end
+
+--- Callbacks
+-- @section Callbacks
+
+--- Callback for when the Component is removed or replaced in an Entity.
+-- @tparam boolean replaced True when the Component is being overwritten, false when it is being removed
+function Component:removed(replaced) -- luacheck: ignore
+end
+
+--- Callback for when the Component is serialized as part of an Entity.
+-- @treturn table|nil Serialized data, or nil to omit this Component
+function Component:serialize()
+   local data = Utils.shallowCopy(self, {})
+
+   --This values shouldn't be copied over
+   data.__componentClass   = nil
+   data.__entity           = nil
+   data.__isComponent      = nil
+   data.__isComponentClass = nil
+
+   return data
+end
+
+--- Callback for when the Component is deserialized from serialized data.
+-- @tparam table data Serialized data to copy onto this Component
+function Component:deserialize(data)
+   Utils.shallowCopy(data, self)
 end
 
 return setmetatable(Component, {

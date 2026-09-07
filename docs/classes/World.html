@@ -34,8 +34,15 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Methods">Methods</a></li>
+<li><a href="#Callbacks">Callbacks </a></li>
 </ul>
 
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/Components.html">Components</a></li>
+  <li><a href="../modules/Type.html">Type</a></li>
+  <li><a href="../modules/Utils.html">Utils</a></li>
+</ul>
 
 <h2>Classes</h2>
 <ul class="nowrap">
@@ -46,25 +53,19 @@
   <li><a href="../classes/System.html">System</a></li>
   <li><strong>World</strong></li>
 </ul>
+
 <h2>Builtin Components</h2>
 <ul class="nowrap">
   <li><a href="../builtins/key.html">key</a></li>
   <li><a href="../builtins/serializable.html">serializable</a></li>
 </ul>
-<h2>Modules</h2>
-<ul class="nowrap">
-  <li><a href="../modules/Components.html">Components</a></li>
-  <li><a href="../modules/Type.html">Type</a></li>
-  <li><a href="../modules/Utils.html">Utils</a></li>
-</ul>
+
 <h2>Guides</h2>
 <ul class="nowrap">
-  <li><a href="../index.html">Getting Started</a></li>
   <li><a href="../guides/Why-ECS.md.html">Why ECS? Why Concord?</a></li>
   <li><a href="../guides/Custom-Pools.md.html">Custom Pools</a></li>
   <li><a href="../guides/Pool-Flushing-and-Timing.md.html">Pool Flushing and Timing</a></li>
 </ul>
-
 </div>
 
 <div id="content">
@@ -158,6 +159,17 @@
 	<td class="summary">Gets an Entity by its key.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#world:setResource">world:setResource (name, resource)</a></td>
+	<td class="summary">Sets a named resource in the World.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#world:getResource">world:getResource (name)</a></td>
+	<td class="summary">Gets a named resource from the World.</td>
+	</tr>
+</table>
+<h2><a href="#Callbacks">Callbacks </a></h2>
+<table class="function_list">
+	<tr>
 	<td class="name" nowrap><a href="#world:onEntityAdded">world:onEntityAdded (e)</a></td>
 	<td class="summary">Callback for when an Entity is added to the World.</td>
 	</tr>
@@ -166,12 +178,12 @@
 	<td class="summary">Callback for when an Entity is removed from the World.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#world:setResource">world:setResource (name, resource)</a></td>
-	<td class="summary">Sets a named resource in the World.</td>
+	<td class="name" nowrap><a href="#world:beforeEmit">world:beforeEmit ([systemName], functionName[, listeners], ...)</a></td>
+	<td class="summary">Callback before World:emit forwards an event to Systems.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#world:getResource">world:getResource (name)</a></td>
-	<td class="summary">Gets a named resource from the World.</td>
+	<td class="name" nowrap><a href="#world:afterEmit">world:afterEmit ([systemName], functionName[, listeners], ...)</a></td>
+	<td class="summary">Callback after World:emit has forwarded an event to Systems.</td>
 	</tr>
 </table>
 
@@ -489,6 +501,7 @@
     <dd>
     Emits a callback in the World.
  Calls all functions with the functionName of added Systems.
+ Prefix the name with a System's name to target one System: <code>&quot;SystemName.event&quot;</code>.
  Automatically flushes before forwarding the event, unless this emit is nested
  or a flush is already in progress.
  If beforeEmit exists and returns a truthy value, listeners are skipped.
@@ -499,7 +512,7 @@
     <ul>
         <li><span class="parameter">functionName</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
-         Name of functions to call.
+         Event name, or <code>&quot;SystemName.event&quot;</code> to call only that System
         </li>
         <li><span class="parameter">...</span>
          Parameters passed to System's functions
@@ -742,48 +755,6 @@
 
 </dd>
     <dt>
-    <a name = "world:onEntityAdded"></a>
-    <strong>world:onEntityAdded (e)</strong>
-    </dt>
-    <dd>
-    Callback for when an Entity is added to the World.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">e</span>
-            <span class="types"><a class="type" href="../classes/Entity.html#">Entity</a></span>
-         The Entity that was added
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "world:onEntityRemoved"></a>
-    <strong>world:onEntityRemoved (e)</strong>
-    </dt>
-    <dd>
-    Callback for when an Entity is removed from the World.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">e</span>
-            <span class="types"><a class="type" href="../classes/Entity.html#">Entity</a></span>
-         The Entity that was removed
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
     <a name = "world:setResource"></a>
     <strong>world:setResource (name, resource)</strong>
     </dt>
@@ -840,11 +811,134 @@
 
 </dd>
 </dl>
+    <h2 class="section-header "><a name="Callbacks"></a>Callbacks </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "world:onEntityAdded"></a>
+    <strong>world:onEntityAdded (e)</strong>
+    </dt>
+    <dd>
+    Callback for when an Entity is added to the World.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">e</span>
+            <span class="types"><a class="type" href="../classes/Entity.html#">Entity</a></span>
+         The Entity that was added
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "world:onEntityRemoved"></a>
+    <strong>world:onEntityRemoved (e)</strong>
+    </dt>
+    <dd>
+    Callback for when an Entity is removed from the World.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">e</span>
+            <span class="types"><a class="type" href="../classes/Entity.html#">Entity</a></span>
+         The Entity that was removed
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "world:beforeEmit"></a>
+    <strong>world:beforeEmit ([systemName], functionName[, listeners], ...)</strong>
+    </dt>
+    <dd>
+    Callback before World:emit forwards an event to Systems.
+ Returning a truthy value skips System listeners and afterEmit for this emit.
+ Nested emits from this callback do not re-enter beforeEmit or afterEmit.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">systemName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+         System name when emit used <code>&quot;SystemName.event&quot;</code>, otherwise nil
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">functionName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+         Name of the event being emitted
+        </li>
+        <li><span class="parameter">listeners</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a></span>
+         Listeners registered for this event, or nil
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">...</span>
+         Parameters passed to World:emit
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Truthy to skip listeners and afterEmit
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "world:afterEmit"></a>
+    <strong>world:afterEmit ([systemName], functionName[, listeners], ...)</strong>
+    </dt>
+    <dd>
+    Callback after World:emit has forwarded an event to Systems.
+ Not called when beforeEmit skips the emit, or during nested emits from beforeEmit or afterEmit.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">systemName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+         System name when emit used <code>&quot;SystemName.event&quot;</code>, otherwise nil
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">functionName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+         Name of the event being emitted
+        </li>
+        <li><span class="parameter">listeners</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.6">table</a></span>
+         Listeners registered for this event, or nil
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">...</span>
+         Parameters passed to World:emit
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
-<i style="float:right;">Last updated 2026-09-06 21:32:30 </i>
+<i style="float:right;">Last updated 2026-09-06 21:49:01 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

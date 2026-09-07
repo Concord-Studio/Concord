@@ -77,8 +77,8 @@ local SIDEBAR_KINDS = { "Modules", "Classes", "Builtins", "Topics", "Guides" }
 local SIDEBAR_LABELS = { Builtins = "Builtin Components", Topics = "Guides" }
 
 local function strip_getting_started(list)
-   list = list:gsub('<li><a href="[^"]+">Getting Started</a></li>%s*', "")
-   list = list:gsub('<li><strong>Getting Started</strong></li>%s*', "")
+   list = list:gsub('<li>%s*<a href="[^"]+"[^>]*>Getting Started%s*</a>%s*</li>%s*', "")
+   list = list:gsub('<li>%s*<strong>Getting Started%s*</strong>%s*</li>%s*', "")
    return list
 end
 
@@ -237,6 +237,7 @@ local function postprocess(html, path)
       end
    )
    html = html:gsub('%s*<link rel="stylesheet" href="[^"]*ldoc%-custom%.css"[^>]*>', "")
+   html = reorder_sidebar(html)
    html = retitle_index_topics(html)
    html = html:gsub('<h2>Builtins</h2>', '<h2>Builtin Components</h2>')
    html = html:gsub('<h2>Topics</h2>', '<h2>Guides</h2>')

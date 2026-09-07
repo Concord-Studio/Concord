@@ -112,12 +112,16 @@ function List:sort(order)
    return self
 end
 
+--- Callbacks
+-- @section Callbacks
+
 --- Callback for when an item is added to the List.
 -- @param obj Object that was added
 function List:onAdded (obj) --luacheck: ignore
 end
 
 --- Callback for when an item is removed from the List.
+-- Not called by List:clear.
 -- @param obj Object that was removed
 function List:onRemoved (obj) --luacheck: ignore
 end
