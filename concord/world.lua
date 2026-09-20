@@ -26,8 +26,10 @@ local defaultGenerator = function (state)
 end
 
 --- Creates a new World.
+-- @see World:addSystems
+-- @param ... SystemClasses of Systems to add
 -- @treturn World The new World
-function World.new()
+function World.new(...)
    local world = setmetatable({
       __entities = List(),
       __systems  = List(),
@@ -63,7 +65,7 @@ function World.new()
       Utils.shallowCopy(World, world)
    end
 
-   return world
+   return world:addSystems(...)
 end
 
 --- Queues an Entity to be added to the World.
@@ -383,7 +385,15 @@ function World:emit(functionName, ...)
          local system = listener.system
 
          if system.__enabled and (not systemName or system.__name == systemName) then
-            listener.callback(system, ...)
+            self.__ignoreEmits = true
+            local ignoreListener = self:beforeSystemCallback(system, eventName, ...)
+            self.__ignoreEmits = false
+            if not ignoreListener then
+               listener.callback(system, ...)
+            end
+            self.__ignoreEmits = true
+            self:afterSystemCallback(system, eventName, ...)
+            self.__ignoreEmits = false
          end
       end
    end
@@ -595,17 +605,18 @@ end
 
 --- Callback before World:emit forwards an event to Systems.
 -- Returning a truthy value skips System listeners and afterEmit for this emit.
--- Nested emits from this callback do not re-enter beforeEmit or afterEmit.
+-- Nested emits are forbidden inside this callback
 -- @tparam[opt] string systemName System name when emit used `"SystemName.event"`, otherwise nil
 -- @string functionName Name of the event being emitted
 -- @tparam[opt] table listeners Listeners registered for this event, or nil
 -- @param ... Parameters passed to World:emit
--- @treturn[opt] boolean Truthy to skip listeners and afterEmit
+-- @treturn[opt] boolean Truthy to skip listeners
 function World:beforeEmit(systemName, functionName, listeners, ...) -- luacheck: ignore
 end
 
 --- Callback after World:emit has forwarded an event to Systems.
--- Not called when beforeEmit skips the emit, or during nested emits from beforeEmit or afterEmit.
+-- Not called when beforeEmit skips the emit
+-- Nested emits are forbidden inside this callback
 -- @tparam[opt] string systemName System name when emit used `"SystemName.event"`, otherwise nil
 -- @string functionName Name of the event being emitted
 -- @tparam[opt] table listeners Listeners registered for this event, or nil
@@ -613,9 +624,28 @@ end
 function World:afterEmit(systemName, functionName, listeners, ...) -- luacheck: ignore
 end
 
+
+--- Callback before World:emit forwards an event to a System.
+-- Returning a truthy value skips the System listener and afterSystemCallback for this event.
+-- Nested emits are forbidden inside this callback
+-- @tparam System system System that is being called
+-- @string eventName Name of the event being emitted
+-- @param ... Parameters passed to World:emit
+-- @treturn[opt] boolean Truthy to skip the System listener and afterSystemCallback
+function World:beforeSystemCallback(system, eventName, ...) -- luacheck: ignore
+end
+
+--- Callback after World:emit has forwarded an event to a System.
+-- Not called when beforeSystemCallback skips the emit
+-- Nested emits are forbidden inside this callback
+-- @tparam System system System that is being called
+-- @string eventName Name of the event being emitted
+-- @param ... Parameters passed to World:emit
+function World:afterSystemCallback(system, eventName, ...) -- luacheck: ignore
+end
+
 return setmetatable(World, {
    __call = function(_, ...)
-      -- LuaLS: redundant-parameter (World.new takes no arguments)
       return World.new(...)
    end,
 })
