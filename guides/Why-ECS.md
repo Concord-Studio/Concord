@@ -6,9 +6,9 @@ There are various reasons why people choose ECS for their projects, there is a v
 
 Yeah it's a trend, most game engines are moving towards ECS as their pattern of choice, big names in the industry are using the pattern and more people are following this trend ([Unity](https://unity.com/ecs), [Unreal Engine](https://dev.epicgames.com/community/learning/talks-and-demos/37Oz/large-numbers-of-entities-with-mass-in-unreal-engine-5), [Overwatch (video)](https://www.youtube.com/watch?v=W3aieHjyNvw), etc).
 
-This is not a good reason to use Concord but it does help that more and more documentation is being written about ECS and how to use it to organize your game code.
+This is not a good reason to use Concord but it does help that more people are writing documentation and guides about ECS and how to use it to organize your game code.
 
-But this is also a downside, ECS is NOW being used by more game engines, but OOP has been the king for way longer and is more prevalent and used in this market.
+But this is also a downside, ECS is NOW being used by more game engines, but OOP has been the king for way longer and is the more prevalent solution used in the market.
 
 Concord isn't here as part of the trend, and doesn't intend to follow what other ECS frameworks do. It instead presents it's own interpretation of ECS and makes a heavy focus on the ease of use and development.
 
@@ -31,18 +31,17 @@ Well this is the argument most game engines make to sell you ECS as the best arc
 Remember our behaviors and data are stored separately? This helps keep our data small.
 Remember how we don't make distinction between entities and instead rely on filtering? This allows us to pack our entities close together in memory so that we don't have to jump around so much when looping through them in our systems.
 
-Unfortunately this doesn't apply to Concord because in Lua land we can't benefit from all of this, our representation of Components, Entities and Pools don't provide an advantage towards objects. Yeah Concord is fast for the majority of use cases, but this is not its selling point. You can probably write faster code without a library, and there are plenty alternatives that focus on speed.
+Unfortunately this doesn't apply to Concord because in Lua land we can't benefit from all of this, our representation of Components, Entities and Pools doesn't provide an advantage towards objects. Yeah Concord is fast for the majority of use cases, but this is not its selling point. You can probably write faster code without a library, and there are plenty alternatives that focus on speed.
 
 Lua although fast, is not used for optimization purposes, and the same applies to Concord. Concord tries to be reliable, easy to use and feature complete, it is not an optimization.
 
-We actually made [an experiment](https://github.com/Keyslam/Sniper) making a super efficient ECS library, but it was awful to code with and one line of code could throw all the optimizations away. In our opinion, although it's possible to make a super-fast ECS library and speed does make a huge difference, it's not worth it when working in Lua where JIT optimization is hard
+We actually made [an experiment](https://github.com/Keyslam/Sniper) making a super efficient ECS library, but it was awful to code with and one line of code could throw all the optimizations away. In our opinion, although it's possible to make a super-fast ECS library and speed does make a huge difference, it's not worth it when working in Lua where JIT optimization is hard.
 
 ### Reminds me of Functional Programming
 
-If you have tried ["The Elm Architecture"](https://elmprogramming.com/elm-architecture-conclusion.html) or ["Redux"](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow#redux-application-data-flow) you may find the unidirectional data flow in ECS familiar.
+If you have tried or heard about ["The Elm Architecture"](https://elmprogramming.com/elm-architecture-conclusion.html) or ["Redux"](https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow#redux-application-data-flow) you may find the unidirectional data flow in ECS familiar.
 
-If we think about our Entities and Components as our Model or State, and Systems as our Update or Reducers.
-The only way to mutate our Model/State is through an Event processed by our Update/Reducer
+If we think about our Entities and Components as our Model or State, and Systems as our Update or Reducers, then the only way to mutate our Model/State is through an Event processed by our Update/Reducer.
 
 This [unidirectional data flow](https://en.wikipedia.org/wiki/Unidirectional_Data_Flow_%28computer_science%29) and the concept of using [reducer functions](https://en.wikipedia.org/wiki/Fold_%28higher-order_function%29) as a way to update state is a proven concept and widely used in Functional Programming.
 

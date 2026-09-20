@@ -102,6 +102,7 @@ for i, entity in ipairs(animals) do
 end
 ```
 
+<!-- markdownlint-disable MD033 -->
 <details><summary>Side note on Filter rules</summary>
 
 > If we had another Entity like this one:
@@ -119,6 +120,7 @@ end
 > And although Parrot has `position` and doesn't have `machine`, it lacks the `terrestrial` Component.
 
 </details>
+<!-- markdownlint-enable MD033 -->
 
 This is great but the `World:query` operation is rather expensive, so Concord instead provides Pools.
 A Pool has an associated Filter and will be updated when Entities are added or modified in the World.
@@ -198,4 +200,6 @@ We defined a few big terms and how they are used in Concord, but to summarize th
 
 These are Concord definitions, and although they may apply to other ECS libraries or frameworks, some differences may exist.
 
-With this we have covered the basics. With the API docs you would be ready to start working with Concord, but if you want to dig into more advanced concepts read some of our Guides instead.
+With this we have covered the basics. Continue with [Components](guides/Components.md.html), then [Entities](guides/Entities.md.html), [Systems](guides/Systems.md.html), and [Worlds](guides/Worlds.md.html). After those, [Making a game with Concord and LÖVE](guides/Making-a-Game.md.html) brings everything together.
+
+If you don't see the benefits, consider reading [Why ECS?](guides/Why-ECS.md.html), this goes into the design decisions made with Concord.

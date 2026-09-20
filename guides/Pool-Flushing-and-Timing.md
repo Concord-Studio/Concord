@@ -27,7 +27,7 @@ As you can see most operations are immediate and you can see the results right a
 
 There is one place however where we can't have immediate updates without introducing other sets of issues. That is Pools and Filters.
 
-As discussed in the in-depth Systems article, all Pools have an associated Filter, this Filter specified all the requirements Entities should have to be in the Pool. The one checking that Pools have all the Entities that meet their requirements is the World.
+As discussed in the [Systems](Systems.md) guide, all Pools have an associated Filter. This Filter specifies the requirements Entities should have to be in the Pool. The one checking that Pools have all the Entities that meet their requirements is the World.
 
 ### Syncing the Pools
 
