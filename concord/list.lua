@@ -1,5 +1,9 @@
 --- Data structure that allows for fast removal at the cost of order.
--- @classmod List
+--- Iterate in order with `ipairs(list)` over indices `1`..`list.size`.
+--- `List()` is equivalent to `List.new()`.
+---@docs kind class
+---@class List
+---@field size integer Number of items in the List
 
 local List = {}
 List.__mt = {
@@ -7,7 +11,7 @@ List.__mt = {
 }
 
 --- Creates a new List.
--- @treturn List A new List
+---@return List
 function List.new()
    return setmetatable({
       size = 0,
@@ -15,10 +19,10 @@ function List.new()
 end
 
 --- Adds an object to the List.
--- Object must be of reference type
--- Object may not be the string 'size', 'onAdded' or 'onRemoved'
--- @param obj Object to add
--- @treturn List self
+--- Object must be of reference type
+--- Object may not be the string 'size', 'onAdded' or 'onRemoved'
+---@param obj any Object to add
+---@return List
 function List:add(obj)
    local size = self.size + 1
 
@@ -31,8 +35,8 @@ function List:add(obj)
 end
 
 --- Removes an object from the List.
--- @param obj Object to remove
--- @treturn List|nil self, or nil if the object was not in the List
+---@param obj any Object to remove
+---@return List|nil Returns self if removed; nil if the object was not in the List
 function List:remove(obj)
    local index = self[obj]
    if not index then return end
@@ -57,8 +61,8 @@ function List:remove(obj)
 end
 
 --- Clears the List completely.
--- Does not call onRemoved.
--- @treturn List self
+--- Does not call onRemoved.
+---@return List
 function List:clear()
    for i = 1, self.size do
       local o = self[i]
@@ -73,23 +77,23 @@ function List:clear()
 end
 
 --- Returns true if the List has the object.
--- @param obj Object to check for
--- @treturn boolean
+---@param obj any Object to check for
+---@return boolean
 function List:has(obj)
    return self[obj] and true or false
 end
 
 --- Returns the object at an index.
--- @number i Index to get from
--- @return Object at the index
+---@param i integer Index to get from
+---@return any Object at the index
 function List:get(i)
    return self[i]
 end
 
 --- Returns the index of an object in the List.
--- Errors if the object is not in the List.
--- @param obj Object to get index of
--- @treturn number index of object in the List.
+--- Errors if the object is not in the List.
+---@param obj any Object to get index of
+---@return integer index of object in the List.
 function List:indexOf(obj)
    if (not self[obj]) then
       error("bad argument #1 to 'List:indexOf' (Object was not in List)", 2)
@@ -99,9 +103,9 @@ function List:indexOf(obj)
 end
 
 --- Sorts the List in place, using the order function.
--- The order function is passed to table.sort internally so documentation on table.sort can be used as reference.
--- @param order Function that takes two items (a and b) and returns true if a should go before b.
--- @treturn List self
+--- The order function is passed to table.sort internally so documentation on table.sort can be used as reference.
+---@param order fun(a: any, b: any): boolean Function that takes two items (a and b) and returns true if a should go before b.
+---@return List
 function List:sort(order)
    table.sort(self, order)
 
@@ -112,17 +116,16 @@ function List:sort(order)
    return self
 end
 
---- Callbacks
--- @section Callbacks
+--- ## Callbacks
 
 --- Callback for when an item is added to the List.
--- @param obj Object that was added
+---@param obj any Object that was added
 function List:onAdded (obj) --luacheck: ignore
 end
 
 --- Callback for when an item is removed from the List.
--- Not called by List:clear.
--- @param obj Object that was removed
+--- Not called by List:clear.
+---@param obj any Object that was removed
 function List:onRemoved (obj) --luacheck: ignore
 end
 

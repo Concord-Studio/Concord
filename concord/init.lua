@@ -1,11 +1,27 @@
 --- A feature-complete ECS library.
--- @module Concord
--- @field Entity Entity class
--- @field Component Component class
--- @field Components Registry of ComponentClasses
--- @field System System class
--- @field World World class
--- @field utils Utility functions
+--- Entry point: `local Concord = require("concord")` (adjust the path to your package layout).
+--- Exports `Entity`, `Component`, `Components`, `System`, `World`, `Type`, `utils`, and `builtins`.
+--- Types are callable constructors, e.g. `Concord.World()`, `Concord.Entity(world)`.
+--- Lowercase field names are deprecated compatibility aliases for the uppercase types.
+---@docs index
+---@docs kind module
+---@class Concord
+---@field Entity Entity
+---@field Component Component
+---@field Components Components
+---@field System System
+---@field World World
+---@field Type Type
+---@field utils Utils
+---@field builtins Builtins
+---@field entity Entity @deprecated Use Entity
+---@field component Component @deprecated Use Component
+---@field components Components @deprecated Use Components
+---@field system System @deprecated Use System
+---@field world World @deprecated Use World
+---@field _VERSION string
+---@field _DESCRIPTION string
+---@field _LICENCE string
 
 local PATH = (...):gsub("%.init$", "")
 
@@ -43,7 +59,9 @@ Concord.Component = require(PATH .. ".component")
 Concord.Components = require(PATH .. ".components")
 Concord.System = require(PATH .. ".system")
 Concord.World = require(PATH .. ".world")
+Concord.Type = require(PATH .. ".type")
 Concord.utils = require(PATH .. ".utils")
+Concord.builtins = require(PATH .. ".builtins")
 
 -- Compatibility aliases, deprecated in favor of uppercase names
 Concord.entity = Concord.Entity
@@ -52,4 +70,5 @@ Concord.components = Concord.Components
 Concord.system = Concord.System
 Concord.world = Concord.World
 
+---@cast Concord Concord
 return Concord

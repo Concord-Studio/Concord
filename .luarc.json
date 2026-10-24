@@ -1,0 +1,18 @@
+{
+  "workspace": {
+    "ignoreDir": [".git", "docs-templates"]
+  },
+  "runtime": {
+    "version": "LuaJIT",
+    "path": ["?.lua", "?/init.lua"]
+  },
+  "Lua.doc.packageName": [],
+  "Lua.doc.privateName": ["__*"],
+    "workspace.library": [
+        "${addons}/love2d/module/library"
+    ],
+    "runtime.special": {
+        "love.filesystem.load": "loadfile"
+    },
+    "workspace.checkThirdParty": false
+}

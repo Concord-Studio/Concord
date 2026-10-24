@@ -1,7 +1,30 @@
---- Iterates over Entities. From these Entities it gets Components and modifies them.
--- A System contains 0 or more Pools.
--- A System is contained by 1 World.
--- @classmod System
+--- Iterates over Entities, reads their Components, and updates game state.
+--- A SystemClass is a template registered on a World via `World:addSystem`.
+--- Each instance belongs to one World and holds zero or more Pools (one per filter key in the definition).
+---
+--- **Pools:** Keys in the definition table become fields on the system instance, each holding a `Pool`
+--- (default `List`). Iterate with `ipairs(system.poolName)`; when the pool is a `List`, use `pool.size`.
+---@see FilterDefinition
+---@see List
+---
+--- **Event listeners:** Every function on the SystemClass except `init`, `onEnabled`, and `onDisabled`
+--- is registered when the system is added. `World:emit("callbackName", ...)` invokes those functions
+--- on enabled system instances. Use `System.new("Name", ...)` and `World:emit("Name.callback", ...)`
+--- to target one system.
+---@see World#emit
+---@see World#addSystem
+---
+--- **Flush and pools:** On `World:flush`, added, removed, and dirty Entities are processed;
+--- each system's filters re-evaluate matching Entities and update pool membership.
+---@see World#flush
+---@docs kind class
+---@class System
+---@field ENABLE_OPTIMIZATION boolean When true, shallow-copies class methods onto each instance for faster access (default true)
+
+--- Registered system type returned by `System.new` / `System()`.
+--- Call the class with a World to construct a live system instance (`SystemClass(world)`).
+--- Filter definition keys become dynamic pool fields on each instance (not listed on this type).
+---@class SystemClass : System
 
 local PATH = (...):gsub('%.[^%.]+$', '')
 
@@ -44,10 +67,12 @@ System.mt = {
       return system
    end,
 }
---- Creates a new SystemClass.
--- @tparam[opt] string name Name of the System. If the first argument is not a string, it is treated as the definition.
--- @tparam[opt] table definition A table containing filters (name = {components...})
--- @treturn System A new SystemClass
+--- Creates a new SystemClass. The return value is a class; the World constructs instances when the class is added.
+--- Reject components in filter lists with the `!` prefix or `Components.reject` (same rules as `FilterDefinition`).
+---@overload fun(definition: table<string, FilterDefinition>): SystemClass
+---@param name? string Name of the System. If the first argument is not a string, it is treated as the definition.
+---@param definition? table<string, FilterDefinition> Map of pool names to filter definitions (component names, optional `!` reject entries)
+---@return SystemClass
 function System.new(name, definition)
    if type(name) ~= "string" then
       definition = name or definition
@@ -87,8 +112,6 @@ function System.new(name, definition)
 end
 
 -- Internal: Evaluates an Entity for all the System's Pools.
--- @param e The Entity to check
--- @treturn System self
 function System:__evaluate(e)
    for _, filter in ipairs(self.__filters) do
       filter:evaluate(e)
@@ -98,8 +121,6 @@ function System:__evaluate(e)
 end
 
 -- Internal: Removes an Entity from the System.
--- @param e The Entity to remove
--- @treturn System self
 function System:__remove(e)
    for _, filter in ipairs(self.__filters) do
       if filter:has(e) then
@@ -111,7 +132,6 @@ function System:__remove(e)
 end
 
 -- Internal: Clears all Entities from the System.
--- @treturn System self
 function System:__clear()
    for _, filter in ipairs(self.__filters) do
       filter:clear()
@@ -121,8 +141,10 @@ function System:__clear()
 end
 
 --- Sets whether the System is enabled.
--- @tparam boolean enable
--- @treturn System self
+--- Disabled systems do not receive `World:emit` callbacks until re-enabled.
+---@see World#emit
+---@param enable boolean
+---@return System
 function System:setEnabled(enable)
    if (not self.__enabled and enable) then
       self.__enabled = true
@@ -135,31 +157,30 @@ function System:setEnabled(enable)
    return self
 end
 
---- Returns whether the System is enabled.
--- @treturn boolean
+--- Returns whether the System is enabled (enabled systems receive emit callbacks).
+---@return boolean
 function System:isEnabled()
    return self.__enabled
 end
 
 --- Returns the World the System is in.
--- @treturn World
+---@return World
 function System:getWorld()
    return self.__world
 end
 
---- Callbacks
--- @section Callbacks
+--- ## Callbacks
 
 --- Callback for system initialization.
--- @tparam World world The World the System was added to
+---@param world World The World the System was added to
 function System:init(world) -- luacheck: ignore
 end
 
---- Callback for when a System is enabled.
+--- Callback when the system becomes enabled via `setEnabled(true)`.
 function System:onEnabled() -- luacheck: ignore
 end
 
---- Callback for when a System is disabled.
+--- Callback when the system becomes disabled via `setEnabled(false)`.
 function System:onDisabled() -- luacheck: ignore
 end
 

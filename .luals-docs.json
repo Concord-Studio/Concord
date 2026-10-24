@@ -1,0 +1,12 @@
+{
+  "inputDir": "concord",
+  "outputDir": "../concord.studio/src/content/docs/reference",
+  "indexJson": "../concord.studio/src/sidebar.json",
+  "templatesDir": "docs-templates",
+  "routePrefix": "api",
+  "groups": [
+    { "label": "Classes", "kinds": ["class"] },
+    { "label": "Sub-modules", "kinds": ["module"] },
+    { "label": "Built-in components", "kinds": ["builtin"] }
+  ]
+}

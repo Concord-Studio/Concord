@@ -1,38 +1,57 @@
-name: Build Docs
+name: Build API Docs
 
-on: 
+on:
   push:
     branches:
-      - master
+      - main
+  pull_request:
 
 jobs:
-  build:
-    name: Build docs
+  docs:
+    name: API docs
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v2
-    
-    - name: Setup Lua
-      uses: leafo/gh-actions-lua@v8
-      with:
-        luaVersion: 5.4
+      - name: Check out Concord
+        uses: actions/checkout@v6
 
-    - name: Install Luarocks
-      uses: leafo/gh-actions-luarocks@v4
+      - name: Check out concord.studio
+        uses: actions/checkout@v6
+        with:
+          repository: Concord-Studio/concord.studio
+          path: concord.studio
+          ref: main
+          token: ${{ github.event_name == 'push' && secrets.CONCORD_STUDIO_TOKEN || github.token }}
 
-    - name: Install LDoc
-      run: luarocks install ldoc
-    
-    - name: Show
-      run: luarocks show ldoc
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
 
-    - name: Build docs
-      run: lua scripts/build-docs.lua
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
 
-    - name: Deploy
-      uses: JamesIves/github-pages-deploy-action@4.1.5
-      with:
-        branch: gh-pages
-        folder: docs
+      - name: Generate API docs
+        run: pnpm dlx @concord.studio/luals-docs@1.1.0 --out concord.studio/src/content/docs/reference --index-json concord.studio/src/sidebar.json
+
+      - name: Commit generated docs
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: concord.studio
+        env:
+          TOKEN: ${{ secrets.CONCORD_STUDIO_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "Add the CONCORD_STUDIO_TOKEN secret with contents write access to Concord-Studio/concord.studio."
+            exit 1
+          fi
+          git add -A -- src/content/docs/reference src/sidebar.json
+          if git diff --cached --quiet; then
+            echo "No documentation changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update generated API reference."
+          git push

@@ -44,3 +44,6 @@ luac.out
 
 # LDoc preprocess output
 .ldoc-guides/
+
+# Mac OS
+.DS_Store

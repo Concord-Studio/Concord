@@ -1,5 +1,17 @@
---- A pure data container that is contained by a single entity.
--- @classmod Component
+--- A pure data container attached to a single Entity.
+--- Component instances are created when an Entity `:give`s the class; populate runs at attach time.
+---@docs kind class
+---@class Component
+---@field getName fun(self: Component): string
+---@field hasName fun(self: Component): boolean
+---@field serialize fun(self: Component): table|nil
+---@field deserialize fun(self: Component, data: table): nil
+---@field removed fun(self: Component, replaced: boolean): nil
+
+--- Registered component type returned by `Component.new` / `Component()`.
+--- `ComponentClass` is the registry entry; instances on entities share callbacks via the class metatable.
+---@class ComponentClass : Component
+---@module 'concord.component'
 
 local PATH = (...):gsub('%.[^%.]+$', '')
 
@@ -12,9 +24,12 @@ Component.__mt = {
 }
 
 --- Creates a new ComponentClass and registers it by name.
--- @string name Unique name of the ComponentClass
--- @tparam[opt] function populate Function that populates a Component with values
--- @treturn Component A new ComponentClass
+--- `Component("name", populate?)` is equivalent to this function.
+--- Populate receives the new component instance and `:give` / `:ensure` arguments.
+---@see Entity#give
+---@param name string Unique name of the ComponentClass
+---@param populate? fun(component: Component, ...): nil Function that populates a Component with values
+---@return ComponentClass
 function Component.new(name, populate)
    if (type(name) ~= "string") then
       Utils.error(2, "bad argument #1 to 'Component.new' (string expected, got %s)", type(name))
@@ -25,7 +40,7 @@ function Component.new(name, populate)
    end
 
    if (rawget(Components, name)) then
-      Utils.error(2, "bad argument #1 to 'Component.new' (ComponentClass with name '%s' was already registerd)", name) -- luacheck: ignore
+      Utils.error(2, "bad argument #1 to 'Component.new' (ComponentClass with name '%s' was already registered)", name) -- luacheck: ignore
    end
 
    if (type(populate) ~= "function" and type(populate) ~= "nil") then
@@ -53,8 +68,6 @@ function Component:__populate() -- luacheck: ignore
 end
 
 -- Internal: Creates a new Component.
--- @param entity The Entity that will receive this Component.
--- @return A new Component
 function Component:__new(entity)
    local component = setmetatable({
       __componentClass = self,
@@ -68,40 +81,36 @@ function Component:__new(entity)
 end
 
 -- Internal: Creates and populates a new Component.
--- @param entity The Entity that will receive this Component.
--- @param ... Varargs passed to the populate function
--- @return A new populated Component
 function Component:__initialize(entity, ...)
    local component = self:__new(entity)
 
-   -- LuaLS: redundant-parameter (varargs forwarded to populate)
+   ---@diagnostic disable-next-line: redundant-parameter
    self.__populate(component, ...)
 
    return component
 end
 
 --- Returns true if the Component has a name.
--- @treturn boolean
+---@return boolean
 function Component:hasName()
    return self.__name and true or false
 end
 
 --- Returns the name of the Component.
--- @treturn string
+---@return string
 function Component:getName()
    return self.__name
 end
 
---- Callbacks
--- @section Callbacks
+--- ## Callbacks
 
 --- Callback for when the Component is removed or replaced in an Entity.
--- @tparam boolean replaced True when the Component is being overwritten, false when it is being removed
+---@param replaced boolean True when the Component is being overwritten, false when it is being removed
 function Component:removed(replaced) -- luacheck: ignore
 end
 
 --- Callback for when the Component is serialized as part of an Entity.
--- @treturn table|nil Serialized data, or nil to omit this Component
+---@return table|nil Serialized data, or nil to omit this Component
 function Component:serialize()
    local data = Utils.shallowCopy(self, {})
 
@@ -115,7 +124,7 @@ function Component:serialize()
 end
 
 --- Callback for when the Component is deserialized from serialized data.
--- @tparam table data Serialized data to copy onto this Component
+---@param data table Serialized data to copy onto this Component
 function Component:deserialize(data)
    Utils.shallowCopy(data, self)
 end

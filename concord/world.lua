@@ -1,7 +1,24 @@
 --- A collection of Systems and Entities.
--- A World emits events so Systems can iterate their Pools.
--- A World contains any amount of Systems and Entities, plus optional named resources.
--- @classmod World
+--- A World emits events so Systems can iterate their Pools.
+--- A World contains any amount of Systems and Entities, plus optional named resources.
+--- `World(...)` is equivalent to `World.new(...)`.
+--- Override optional callbacks below on the world instance (methods are copied onto each instance at creation).
+---@docs kind class
+---@class World
+---@field ENABLE_OPTIMIZATION boolean When true, shallow-copies class methods onto each instance for faster access (default true)
+---@field addEntity fun(self: World, e: Entity): World
+
+--- Payload from `World:serialize`, passed to `World:deserialize`.
+--- `generator` restores key-generator state. Numeric indices are per-entity tables from `Entity:serialize` (see Entity for shape).
+---@class SerializedWorld
+---@field generator any Snapshot of the World's key-generator state
+---@field [integer] table Serialized Entity data from `Entity:serialize`
+
+---@module 'concord.world'
+
+---@module 'concord.entity'
+---@module 'concord.system'
+local ConcordEntity --luacheck: ignore
 
 local PATH = (...):gsub('%.[^%.]+$', '')
 
@@ -26,9 +43,9 @@ local defaultGenerator = function (state)
 end
 
 --- Creates a new World.
--- @see World:addSystems
--- @param ... SystemClasses of Systems to add
--- @treturn World The new World
+---@see World#addSystems
+---@param ... SystemClass SystemClasses of Systems to add
+---@return World The new World
 function World.new(...)
    local world = setmetatable({
       __entities = List(),
@@ -69,39 +86,41 @@ function World.new(...)
 end
 
 --- Queues an Entity to be added to the World.
--- The Entity's world is set immediately. The Entity is not in getEntities()
--- and is not evaluated by Systems until the next flush.
--- @tparam Entity e Entity to add
--- @treturn World self
+--- The Entity's world is set immediately. The Entity is not in getEntities()
+--- and is not evaluated by Systems until the next flush.
+---@param e Entity Entity to add
+---@return World
 function World:addEntity(e)
    if not Type.isEntity(e) then
       Utils.error(2, "bad argument #1 to 'World:addEntity' (Entity expected, got %s)", type(e))
    end
 
-   if e.__world then
+   if Entity.__getWorld(e) then
       error("bad argument #1 to 'World:addEntity' (Entity was already added to a world)", 2)
    end
 
-   e.__world = self
+   Entity.__setWorld(e, self)
    self.__added:add(e)
 
    return self
 end
 
 --- Creates a new Entity and queues it to be added to the World.
--- @treturn Entity e the new Entity
+---@return Entity e the new Entity
 function World:newEntity()
    return Entity(self)
 end
 
 --- Queries flushed Entities against a Filter definition.
--- Pending (not yet flushed) additions are not included. Component changes on
--- already flushed Entities are visible immediately.
--- If onMatch is a callable it is invoked for each match and nothing is returned.
--- Otherwise matches are appended to onMatch when it is a table, or to a new table.
--- @tparam table def Filter definition (component names, with ! prefix to reject)
--- @tparam[opt] function|table onMatch Callback for each match, or a table to fill
--- @treturn table|nil The list of matches, or nil if onMatch was a callback
+--- Pending (not yet flushed) additions are not included. Component changes on
+--- already flushed Entities are visible immediately.
+---@overload fun(self: World, def: FilterDefinition, onMatch: fun(e: Entity)): nil
+--- Pass a function as onMatch. It is called once per matching Entity. Nothing is returned.
+---@overload fun(self: World, def: FilterDefinition, onMatch: table): table
+--- Collect matches into a table and return it. onMatch is optional; when omitted, a new empty table is used.
+---@param def FilterDefinition Filter definition (component names, with ! prefix to reject)
+---@param onMatch? fun(e: Entity)|table Callback for each match, or a table to fill
+---@return table|nil The list of matches, or nil if onMatch was a callback
 function World:query(def, onMatch)
    local filter = Filter.parse(nil, def)
 
@@ -114,7 +133,7 @@ function World:query(def, onMatch)
       if Filter.match(e, filter) then
          if list then
             table.insert(list, e)
-         else
+         elseif onMatch then
             onMatch(e)
          end
       end
@@ -124,16 +143,16 @@ function World:query(def, onMatch)
 end
 
 --- Queues an Entity to be removed from the World.
--- If the Entity has a key Component, it is removed first.
--- The Entity remains in the World until the next flush.
--- @tparam Entity e Entity to remove
--- @treturn World self
+--- If the Entity has a key Component, it is removed first.
+--- The Entity remains in the World until the next flush.
+---@param e Entity Entity to remove
+---@return World
 function World:removeEntity(e)
    if not Type.isEntity(e) then
       Utils.error(2, "bad argument #1 to 'World:removeEntity' (Entity expected, got %s)", type(e))
    end
 
-   if e.__world ~= self then
+   if Entity.__getWorld(e) ~= self then
       error("trying to remove an Entity from a World it doesn't belong to", 2)
    end
 
@@ -147,7 +166,6 @@ function World:removeEntity(e)
 end
 
 -- Internal: Marks an Entity as dirty.
--- @param e Entity to mark as dirty
 function World:__dirtyEntity(e)
    if not self.__dirty:has(e) then
       self.__dirty:add(e)
@@ -155,16 +173,16 @@ function World:__dirtyEntity(e)
 end
 
 --- Returns whether a Flush can currently be performed.
--- Flushing is forbidden while a Flush is already in progress
--- (for example from World:onEntityAdded / Pool:onAdded).
--- @treturn boolean
+--- Flushing is forbidden while a Flush is already in progress
+--- (for example from World:onEntityAdded / Pool:onAdded).
+---@return boolean
 function World:canFlush()
    return not self.__flushing
 end
 
 --- Applies queued Entity additions, removals, and dirty reevaluations.
--- Only the queued buffers are processed, not every Entity in the World.
--- @treturn World self
+--- Only the queued buffers are processed, not every Entity in the World.
+---@return World
 function World:flush()
    if not self:canFlush() then
       Utils.error(2, "bad call to 'World:flush' (cannot flush during a flush)")
@@ -188,7 +206,7 @@ function World:flush()
    for i = 1, self.__backAdded.size do
       e = self.__backAdded[i]
 
-      if e.__world == self then
+      if Entity.__getWorld(e) == self then
          self.__entities:add(e)
 
          for j = 1, self.__systems.size do
@@ -204,8 +222,8 @@ function World:flush()
    for i = 1, self.__backRemoved.size do
       e = self.__backRemoved[i]
 
-      if e.__world == self then
-         e.__world = nil
+      if Entity.__getWorld(e) == self then
+         Entity.__setWorld(e, nil)
          self.__entities:remove(e)
 
          for j = 1, self.__systems.size do
@@ -221,7 +239,7 @@ function World:flush()
    for i = 1, self.__backDirty.size do
       e = self.__backDirty[i]
 
-      if e.__world == self then
+      if Entity.__getWorld(e) == self then
          for j = 1, self.__systems.size do
             self.__systems[j]:__evaluate(e)
          end
@@ -283,11 +301,11 @@ local tryAddSystem = function (world, systemClass)
 end
 
 --- Adds a System to the World.
--- Functions on the SystemClass are registered as event listeners.
--- Entities already in the World are evaluated against the System's Filters.
--- @see World:emit
--- @tparam System systemClass SystemClass of System to add
--- @treturn World self
+--- Functions on the SystemClass are registered as event listeners.
+--- Entities already in the World are evaluated against the System's Filters.
+---@see World#emit
+---@param systemClass SystemClass SystemClass of System to add
+---@return World
 function World:addSystem(systemClass)
    local ok, err = tryAddSystem(self, systemClass)
 
@@ -299,11 +317,11 @@ function World:addSystem(systemClass)
 end
 
 --- Adds multiple Systems to the World.
--- Functions on each SystemClass are registered as event listeners.
--- @see World:addSystem
--- @see World:emit
--- @param ... SystemClasses of Systems to add
--- @treturn World self
+--- Functions on each SystemClass are registered as event listeners.
+---@see World#addSystem
+---@see World#emit
+---@param ... SystemClass SystemClasses of Systems to add
+---@return World
 function World:addSystems(...)
    for i = 1, select("#", ...) do
       local systemClass = select(i, ...)
@@ -318,8 +336,8 @@ function World:addSystems(...)
 end
 
 --- Returns whether the World has a System.
--- @tparam System systemClass SystemClass of System to check for
--- @treturn boolean
+---@param systemClass SystemClass SystemClass of System to check for
+---@return boolean
 function World:hasSystem(systemClass)
    if not Type.isSystemClass(systemClass) then
       Utils.error(2, "bad argument #1 to 'World:hasSystem' (SystemClass expected, got %s)", type(systemClass))
@@ -329,8 +347,8 @@ function World:hasSystem(systemClass)
 end
 
 --- Gets a System from the World.
--- @tparam System systemClass SystemClass of System to get
--- @treturn System System to get
+---@param systemClass SystemClass SystemClass of System to get
+---@return System|nil The system instance, or nil if the class was not added
 function World:getSystem(systemClass)
    if not Type.isSystemClass(systemClass) then
       Utils.error(2, "bad argument #1 to 'World:getSystem' (SystemClass expected, got %s)", type(systemClass))
@@ -340,15 +358,16 @@ function World:getSystem(systemClass)
 end
 
 --- Emits a callback in the World.
--- Calls all functions with the functionName of added Systems.
--- Prefix the name with a System's name to target one System: `"SystemName.event"`.
--- Automatically flushes before forwarding the event, unless this emit is nested
--- or a flush is already in progress.
--- If beforeEmit exists and returns a truthy value, listeners are skipped.
--- afterEmit is called after listeners when present.
--- @string functionName Event name, or `"SystemName.event"` to call only that System
--- @param ... Parameters passed to System's functions
--- @treturn World self
+--- Calls all functions with the functionName of added Systems (see System class for listener registration).
+---@see System
+--- Prefix the name with a System's name to target one System: `"SystemName.event"`.
+--- Automatically flushes before forwarding the event, unless this emit is nested
+--- or a flush is already in progress.
+--- If beforeEmit exists and returns a truthy value, listeners are skipped.
+--- afterEmit is called after listeners when present.
+---@param functionName string Event name, or `"SystemName.event"` to call only that System
+---@param ... any Parameters passed to System's functions
+---@return World
 function World:emit(functionName, ...)
    local shouldFlush = self.__emitSDepth == 0 and self:canFlush()
 
@@ -410,10 +429,10 @@ function World:emit(functionName, ...)
 end
 
 --- Emits a callback in the World without flushing.
--- @see World:emit
--- @string functionName Name of functions to call.
--- @param ... Parameters passed to System's functions
--- @treturn World self
+---@see World#emit
+---@param functionName string Name of functions to call.
+---@param ... any Parameters passed to System's functions
+---@return World
 function World:emitNoFlush(functionName, ...)
    local flushing = self.__flushing
    self.__flushing = true
@@ -423,9 +442,9 @@ function World:emitNoFlush(functionName, ...)
 end
 
 --- Removes all Entities from the World and flushes.
--- Entities that were queued to be added are detached immediately without
--- onEntityRemoved. Already flushed Entities are removed through the normal flush.
--- @treturn World self
+--- Entities that were queued to be added are detached immediately without
+--- onEntityRemoved. Already flushed Entities are removed through the normal flush.
+---@return World
 function World:clear()
    for i = 1, self.__entities.size do
       self:removeEntity(self.__entities[i])
@@ -433,7 +452,7 @@ function World:clear()
 
    for i = 1, self.__added.size do
       local e = self.__added[i]
-      e.__world = nil
+      Entity.__setWorld(e, nil)
    end
    self.__added:clear()
 
@@ -443,21 +462,22 @@ function World:clear()
 end
 
 --- Returns the List of flushed Entities in the World.
--- @treturn List
+---@return List
 function World:getEntities()
    return self.__entities
 end
 
 --- Returns the List of Systems in the World.
--- @treturn List
+---@return List
 function World:getSystems()
    return self.__systems
 end
 
 --- Serializes serializable Entities in the World.
--- Flushes first. Only Entities with a serializable Component are included.
--- @tparam[opt] boolean ignoreKeys If true, Entity keys are omitted
--- @treturn table Serialized world data
+--- Flushes first. Only Entities with a serializable Component are included.
+---@see Entity#serialize
+---@param ignoreKeys? boolean If true, omits keys when calling `Entity:serialize` (Entity parameter name: `ignoreKey`)
+---@return SerializedWorld Serialized world data
 function World:serialize(ignoreKeys)
    self:flush()
 
@@ -476,10 +496,12 @@ function World:serialize(ignoreKeys)
 end
 
 --- Deserializes Entities into the World.
--- @tparam table data Serialized world data
--- @tparam[opt] boolean startClean If true, existing Entities are cleared first
--- @tparam[opt] boolean ignoreGenerator If true, the World's key generator state is left unchanged
--- @treturn World self
+--- Restores each entity's `key` first when present in saved data, then deserializes component array entries.
+---@see Entity#deserialize
+---@param data SerializedWorld Serialized world data
+---@param startClean? boolean If true, existing Entities are cleared first
+---@param ignoreGenerator? boolean If true, the World's key generator state is left unchanged
+---@return World
 function World:deserialize(data, startClean, ignoreGenerator)
    if startClean then
       self:clear()
@@ -515,9 +537,9 @@ function World:deserialize(data, startClean, ignoreGenerator)
 end
 
 --- Sets the function used to generate Entity keys.
--- @tparam function generator Callable that receives the current state and returns key, newState
--- @param initialState Initial state passed to the generator
--- @treturn World self
+---@param generator fun(state: any): string|number, any Callable that receives the current state and returns key, newState
+---@param initialState any Initial state passed to the generator
+---@return World
 function World:setKeyGenerator(generator, initialState)
    if not Type.isCallable(generator) then
       Utils.error(2, "bad argument #1 to 'World:setKeyGenerator' (function expected, got %s)", type(generator))
@@ -542,9 +564,6 @@ function World:__clearKey(e)
 end
 
 -- Internal: Assigns a key to an Entity, generating one if needed.
--- @param e Entity to assign a key to
--- @param key Optional explicit key
--- @return The assigned key
 function World:__assignKey(e, key)
    local hash = self.__hash
 
@@ -568,79 +587,80 @@ function World:__assignKey(e, key)
 end
 
 --- Gets an Entity by its key.
--- @param key Key to look up
--- @treturn Entity|nil
+---@param key string|number Key to look up
+---@return Entity|nil
 function World:getEntityByKey(key)
    return self.__hash.entities[key]
 end
 
---- Sets a named resource in the World.
--- @string name Name of the resource
--- @param resource Resource to set
--- @treturn World self
+--- Sets a named resource on the World (singleton shared state, not an Entity Component).
+--- Typical uses: services, asset handles, or frame context accessible from Systems.
+---@param name string Name of the resource
+---@param resource any Resource to set
+---@return World
 function World:setResource(name, resource)
   self.__resources[name] = resource
   return self
 end
 
 --- Gets a named resource from the World.
--- @string name Name of the resource
--- @return The resource, or nil if none was set
+---@param name string Name of the resource
+---@return any The resource, or nil if none was set
 function World:getResource(name)
   return self.__resources[name]
 end
 
---- Callbacks
--- @section Callbacks
+--- ## Callbacks
+--- Optional hooks: assign on the world instance after `World.new`, e.g. `function world:onEntityAdded(e) ... end`.
 
 --- Callback for when an Entity is added to the World.
--- @tparam Entity e The Entity that was added
+---@param e Entity The Entity that was added
 function World:onEntityAdded(e) -- luacheck: ignore
 end
 
 --- Callback for when an Entity is removed from the World.
--- @tparam Entity e The Entity that was removed
+---@param e Entity The Entity that was removed
 function World:onEntityRemoved(e) -- luacheck: ignore
 end
 
 --- Callback before World:emit forwards an event to Systems.
--- Returning a truthy value skips System listeners and afterEmit for this emit.
--- Nested emits are forbidden inside this callback
--- @tparam[opt] string systemName System name when emit used `"SystemName.event"`, otherwise nil
--- @string functionName Name of the event being emitted
--- @tparam[opt] table listeners Listeners registered for this event, or nil
--- @param ... Parameters passed to World:emit
--- @treturn[opt] boolean Truthy to skip listeners
+--- Returning a truthy value skips System listeners and afterEmit for this emit.
+--- Nested emits are forbidden inside this callback
+---@param systemName? string System name when emit used `"SystemName.event"`, otherwise nil
+---@param functionName string Name of the event being emitted
+---@param listeners? table Listeners registered for this event, or nil
+---@param ... any Parameters passed to World:emit
+---@return boolean? Truthy to skip listeners
 function World:beforeEmit(systemName, functionName, listeners, ...) -- luacheck: ignore
 end
 
 --- Callback after World:emit has forwarded an event to Systems.
--- Not called when beforeEmit skips the emit
--- Nested emits are forbidden inside this callback
--- @tparam[opt] string systemName System name when emit used `"SystemName.event"`, otherwise nil
--- @string functionName Name of the event being emitted
--- @tparam[opt] table listeners Listeners registered for this event, or nil
--- @param ... Parameters passed to World:emit
+--- Not called when beforeEmit skips the emit
+--- Nested emits are forbidden inside this callback
+---@param systemName? string System name when emit used `"SystemName.event"`, otherwise nil
+---@param functionName string Name of the event being emitted
+---@param listeners? table Listeners registered for this event, or nil
+---@param ... any Parameters passed to World:emit
 function World:afterEmit(systemName, functionName, listeners, ...) -- luacheck: ignore
 end
 
 
 --- Callback before World:emit forwards an event to a System.
--- Returning a truthy value skips the System listener and afterSystemCallback for this event.
--- Nested emits are forbidden inside this callback
--- @tparam System system System that is being called
--- @string eventName Name of the event being emitted
--- @param ... Parameters passed to World:emit
--- @treturn[opt] boolean Truthy to skip the System listener and afterSystemCallback
+--- Returning a truthy value skips the System listener and afterSystemCallback for this event.
+--- Nested emits are forbidden inside this callback
+---@param system System System that is being called
+---@param eventName string Name of the event being emitted
+---@param ... any Parameters passed to World:emit
+---@return boolean? Truthy to skip the System listener and afterSystemCallback
 function World:beforeSystemCallback(system, eventName, ...) -- luacheck: ignore
 end
 
 --- Callback after World:emit has forwarded an event to a System.
--- Not called when beforeSystemCallback skips the emit
--- Nested emits are forbidden inside this callback
--- @tparam System system System that is being called
--- @string eventName Name of the event being emitted
--- @param ... Parameters passed to World:emit
+--- Not called when beforeSystemCallback skips the emit
+--- Nested emits are forbidden inside this callback
+---@param system System System that is being called
+---@param eventName string Name of the event being emitted
+---@param ... any Parameters passed to World:emit
 function World:afterSystemCallback(system, eventName, ...) -- luacheck: ignore
 end
 
