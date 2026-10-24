@@ -2,7 +2,7 @@
 --- Iterate in order with `ipairs(list)` over indices `1`..`list.size`.
 --- `List()` is equivalent to `List.new()`.
 ---@docs kind class
----@class List
+---@class Concord.List
 ---@field size integer Number of items in the List
 
 local List = {}
@@ -11,7 +11,7 @@ List.__mt = {
 }
 
 --- Creates a new List.
----@return List
+---@return Concord.List
 function List.new()
    return setmetatable({
       size = 0,
@@ -22,7 +22,7 @@ end
 --- Object must be of reference type
 --- Object may not be the string 'size', 'onAdded' or 'onRemoved'
 ---@param obj any Object to add
----@return List
+---@return Concord.List
 function List:add(obj)
    local size = self.size + 1
 
@@ -36,7 +36,7 @@ end
 
 --- Removes an object from the List.
 ---@param obj any Object to remove
----@return List|nil Returns self if removed; nil if the object was not in the List
+---@return Concord.List|nil Returns self if removed; nil if the object was not in the List
 function List:remove(obj)
    local index = self[obj]
    if not index then return end
@@ -62,7 +62,7 @@ end
 
 --- Clears the List completely.
 --- Does not call onRemoved.
----@return List
+---@return Concord.List
 function List:clear()
    for i = 1, self.size do
       local o = self[i]
@@ -105,7 +105,7 @@ end
 --- Sorts the List in place, using the order function.
 --- The order function is passed to table.sort internally so documentation on table.sort can be used as reference.
 ---@param order fun(a: any, b: any): boolean Function that takes two items (a and b) and returns true if a should go before b.
----@return List
+---@return Concord.List
 function List:sort(order)
    table.sort(self, order)
 

@@ -1,6 +1,6 @@
 --- Helper module for misc operations
 ---@docs kind module
----@class Utils
+---@class Concord.Utils
 
 local Utils = {}
 

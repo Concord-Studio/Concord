@@ -2,13 +2,13 @@
 ---@docs index
 ---@docs kind module
 ---@docs title Overview
----@class Builtins
----@field serializable Serializable
----@field key Key
+---@class Concord.Builtins
+---@field serializable Concord.Serializable
+---@field key Concord.Key
 
 local PATH = (...):gsub("%.init$", "")
 
----@type Builtins
+---@type Concord.Builtins
 return {
 	serializable = require(PATH .. ".serializable"),
 	key = require(PATH .. ".key"),

@@ -4,27 +4,27 @@
 ---
 --- **Pools:** Keys in the definition table become fields on the system instance, each holding a `Pool`
 --- (default `List`). Iterate with `ipairs(system.poolName)`; when the pool is a `List`, use `pool.size`.
----@see FilterDefinition
----@see List
+---@see Concord.FilterDefinition
+---@see Concord.List
 ---
 --- **Event listeners:** Every function on the SystemClass except `init`, `onEnabled`, and `onDisabled`
 --- is registered when the system is added. `World:emit("callbackName", ...)` invokes those functions
 --- on enabled system instances. Use `System.new("Name", ...)` and `World:emit("Name.callback", ...)`
 --- to target one system.
----@see World#emit
----@see World#addSystem
+---@see Concord.World#emit
+---@see Concord.World#addSystem
 ---
 --- **Flush and pools:** On `World:flush`, added, removed, and dirty Entities are processed;
 --- each system's filters re-evaluate matching Entities and update pool membership.
----@see World#flush
+---@see Concord.World#flush
 ---@docs kind class
----@class System
+---@class Concord.System
 ---@field ENABLE_OPTIMIZATION boolean When true, shallow-copies class methods onto each instance for faster access (default true)
 
 --- Registered system type returned by `System.new` / `System()`.
 --- Call the class with a World to construct a live system instance (`SystemClass(world)`).
 --- Filter definition keys become dynamic pool fields on each instance (not listed on this type).
----@class SystemClass : System
+---@class Concord.SystemClass : Concord.System
 
 local PATH = (...):gsub('%.[^%.]+$', '')
 
@@ -69,10 +69,10 @@ System.mt = {
 }
 --- Creates a new SystemClass. The return value is a class; the World constructs instances when the class is added.
 --- Reject components in filter lists with the `!` prefix or `Components.reject` (same rules as `FilterDefinition`).
----@overload fun(definition: table<string, FilterDefinition>): SystemClass
+---@overload fun(definition: table<string, Concord.FilterDefinition>): Concord.SystemClass
 ---@param name? string Name of the System. If the first argument is not a string, it is treated as the definition.
----@param definition? table<string, FilterDefinition> Map of pool names to filter definitions (component names, optional `!` reject entries)
----@return SystemClass
+---@param definition? table<string, Concord.FilterDefinition> Map of pool names to filter definitions (component names, optional `!` reject entries)
+---@return Concord.SystemClass
 function System.new(name, definition)
    if type(name) ~= "string" then
       definition = name or definition
@@ -142,9 +142,9 @@ end
 
 --- Sets whether the System is enabled.
 --- Disabled systems do not receive `World:emit` callbacks until re-enabled.
----@see World#emit
+---@see Concord.World#emit
 ---@param enable boolean
----@return System
+---@return Concord.System
 function System:setEnabled(enable)
    if (not self.__enabled and enable) then
       self.__enabled = true
@@ -164,7 +164,7 @@ function System:isEnabled()
 end
 
 --- Returns the World the System is in.
----@return World
+---@return Concord.World
 function System:getWorld()
    return self.__world
 end
@@ -172,7 +172,7 @@ end
 --- ## Callbacks
 
 --- Callback for system initialization.
----@param world World The World the System was added to
+---@param world Concord.World The World the System was added to
 function System:init(world) -- luacheck: ignore
 end
 

@@ -1,8 +1,8 @@
 --- Container for registered ComponentClasses.
 --- Use `Components.get(name)`, `Components.has(name)`, or `Components[name]` / `Components.name` (same as get; errors if missing).
----@see FilterDefinition
+---@see Concord.FilterDefinition
 ---@docs kind module
----@class Components
+---@class Concord.Components
 ---@field __REJECT_PREFIX string Reject prefix for filter lists (`"!"`); see `Components.reject` and FilterDefinition
 ---@module 'concord.component'
 
@@ -35,7 +35,7 @@ end
 ---@param name string Name of the ComponentClass to check
 ---@param acceptRejected? boolean Whether to accept names prefixed with the Reject Prefix.
 ---@return boolean ok
----@return ComponentClass|string componentClass ComponentClass on success, or an error string on failure
+---@return Concord.ComponentClass|string componentClass ComponentClass on success, or an error string on failure
 ---@return string|boolean rejected On success: the stripped Component name if the name had the Reject Prefix, otherwise false
 function Components.try(name, acceptRejected)
    if type(name) ~= "string" then
@@ -60,13 +60,13 @@ end
 
 --- Returns the ComponentClass with the specified name
 ---@param name string Name of the ComponentClass to get
----@return ComponentClass
+---@return Concord.ComponentClass
 function Components.get(name)
    local ok, value = Components.try(name)
 
    if not ok then error(value, 2) end
 
-   return value --[[@as ComponentClass]]
+   return value --[[@as Concord.ComponentClass]]
 end
 
 return setmetatable(Components, {

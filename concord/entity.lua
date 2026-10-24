@@ -3,11 +3,11 @@
 --- Prefer `:give`, `:get`, and `:has` so unregistered names error instead of silently failing.
 --- `Entity(...)` is equivalent to `Entity.new(...)`.
 ---@docs kind class
----@class Entity
+---@class Concord.Entity
 ---@field SERIALIZE_BY_DEFAULT boolean When true, `Entity.new` auto-`:give("serializable")` (see built-in Serializable)
----@field private __world? World
----@field has fun(self: Entity, name: string): boolean
----@field remove fun(self: Entity, name: string): Entity
+---@field private __world? Concord.World
+---@field has fun(self: Concord.Entity, name: string): boolean
+---@field remove fun(self: Concord.Entity, name: string): Concord.Entity
 ---@module 'concord.entity'
 
 local PATH = (...):gsub("%.[^%.]+$", "")
@@ -39,8 +39,8 @@ end
 
 --- Creates a new Entity. Optionally queues it to be added to a World.
 --- If Entity.SERIALIZE_BY_DEFAULT is true, the Entity is given a "serializable" Component.
----@param world? World World to add the entity to
----@return Entity
+---@param world? Concord.World World to add the entity to
+---@return Concord.Entity
 function Entity.new(world)
 	if world ~= nil and not Type.isWorld(world) then
 		Utils.error(2, "bad argument #1 to 'Entity.new' (world/nil expected, got %s)", type(world))
@@ -144,12 +144,12 @@ end
 
 --- Gives an Entity a Component.
 --- If the Component already exists, it's overridden by this new Component.
----@see Component#removed
----@overload fun(self: Entity, component: Component): Entity
+---@see Concord.Component#removed
+---@overload fun(self: Concord.Entity, component: Concord.Component): Concord.Entity
 --- Pass an existing Component instance (already populated, not attached to an entity). Skips name and populate arguments.
 ---@param name string Name of the ComponentClass
 ---@param ... any Additional arguments to pass to the Component's populate function
----@return Entity
+---@return Concord.Entity
 --[[@usage
 Concord.Component("position", function (component, x, y)
   component.x = x or 0
@@ -164,19 +164,19 @@ end
 
 --- Ensures an Entity has a Component.
 --- If the Component already exists, no action is taken.
----@overload fun(self: Entity, component: Component): Entity
+---@overload fun(self: Concord.Entity, component: Concord.Component): Concord.Entity
 --- Pass an existing Component instance (already populated, not attached to an entity). Skips name and populate arguments.
 ---@param name string Name of the ComponentClass
 ---@param ... any Additional arguments to pass to the Component's populate function
----@return Entity
+---@return Concord.Entity
 function Entity:ensure(name, ...)
 	return giveComponent(self, true, name, ...)
 end
 
 --- Removes a Component from an Entity.
----@see Component#removed
+---@see Concord.Component#removed
 ---@param name string Name of the ComponentClass to remove
----@return Entity
+---@return Concord.Entity
 function Entity:remove(name)
 	local ok, componentClass = Components.try(name)
 
@@ -190,9 +190,9 @@ function Entity:remove(name)
 end
 
 --- Assembles an Entity by calling `assemblage(self, ...)` and returning `self`.
----@param assemblage fun(entity: Entity, ...) Function that will assemble an entity
+---@param assemblage fun(entity: Concord.Entity, ...) Function that will assemble an entity
 ---@param ... any Additional arguments to pass to the assemblage function.
----@return Entity
+---@return Concord.Entity
 function Entity:assemble(assemblage, ...)
 	if type(assemblage) ~= "function" then
 		Utils.error(2, "bad argument #1 to 'Entity:assemble' (function expected, got %s)", type(assemblage))
@@ -205,7 +205,7 @@ end
 
 --- Destroys the Entity.
 --- Queues removal from its World if it's in one. The Entity stays in the World until the next flush.
----@return Entity
+---@return Concord.Entity
 function Entity:destroy()
 	if self.__world then
 		self.__world:removeEntity(self)
@@ -238,7 +238,7 @@ end
 
 --- Gets a Component from the Entity.
 ---@param name string Name of the ComponentClass to get
----@return Component|nil The Component, or nil if the Entity does not have it
+---@return Concord.Component|nil The Component, or nil if the Entity does not have it
 function Entity:get(name)
 	local ok, componentClass = Components.try(name)
 
@@ -246,7 +246,7 @@ function Entity:get(name)
 		Utils.error(2, "bad argument #1 to 'Entity:get' (%s)", componentClass)
 	end
 
-	return self[name] --[[@as Component|nil]]
+	return self[name] --[[@as Concord.Component|nil]]
 end
 
 --- Returns a shallow copy of the Entity's fields, excluding __world and __isEntity.
@@ -271,7 +271,7 @@ function Entity:inWorld()
 end
 
 --- Returns the World the Entity is in, or nil when not in a world.
----@return World|nil
+---@return Concord.World|nil
 function Entity:getWorld()
 	return self.__world
 end
@@ -279,16 +279,16 @@ end
 --- Serializes the Entity's Components.
 --- Output shape: optional `key` field (key value) unless `ignoreKey`; other components as array entries
 --- each with `__name` plus fields from `Component:serialize`. Components that return nil from serialize are omitted.
----@see SerializedWorld
+---@see Concord.SerializedWorld
 ---@param ignoreKey? boolean If true, the key Component is omitted (World:serialize uses the related flag `ignoreKeys`)
 ---@return table Serialized Entity data
 function Entity:serialize(ignoreKey)
 	local data = {}
 
-	---@cast self { [string]: Component }
+	---@cast self { [string]: Concord.Component }
 	for name, component in pairs(self) do
 		if Type.isComponent(component) then
-         ---@type Component
+         ---@type Concord.Component
          local comp = component
 
 			-- The key component needs to be treated separately.
@@ -313,7 +313,7 @@ end
 
 --- Deserializes Components onto the Entity from the array portion of serialized data.
 --- Component classes must already be registered. Does not restore `key`; `World:deserialize` handles keys separately.
----@see World#deserialize
+---@see Concord.World#deserialize
 ---@param data table Serialized Entity data (array of component blobs; may include `.key` when loading outside World)
 function Entity:deserialize(data)
 	for i = 1, #data do

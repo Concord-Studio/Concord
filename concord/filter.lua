@@ -1,29 +1,29 @@
 --- List of component names for one filter (`!name` to reject, or `Components.reject`).
 --- Optional `constructor` creates a custom pool instead of the default List.
----@see Components.reject
----@class FilterDefinition
+---@see Concord.Components.reject
+---@class Concord.FilterDefinition
 ---@field [integer] string
----@field constructor? fun(def: FilterDefinition): Pool
+---@field constructor? fun(def: Concord.FilterDefinition): Concord.Pool
 
 --- Entity collection backing a Filter. Default instances are List; custom constructors must implement add, remove, has, and clear.
 --- Default List pools may define `onAdded` / `onRemoved` (see List); `clear` does not invoke `onRemoved`.
----@see List
----@class Pool
----@field add fun(self: Pool, e: Entity): Pool
----@field remove fun(self: Pool, e: Entity): Pool|nil
----@field has fun(self: Pool, e: Entity): boolean
----@field clear fun(self: Pool, ...: any): Pool
----@field onAdded? fun(self: Pool, e: Entity): nil Optional; List pools support this callback
----@field onRemoved? fun(self: Pool, e: Entity): nil Optional; List pools support this callback
+---@see Concord.List
+---@class Concord.Pool
+---@field add fun(self: Concord.Pool, e: Concord.Entity): Concord.Pool
+---@field remove fun(self: Concord.Pool, e: Concord.Entity): Concord.Pool|nil
+---@field has fun(self: Concord.Pool, e: Concord.Entity): boolean
+---@field clear fun(self: Concord.Pool, ...: any): Concord.Pool
+---@field onAdded? fun(self: Concord.Pool, e: Concord.Entity): nil Optional; List pools support this callback
+---@field onRemoved? fun(self: Concord.Pool, e: Concord.Entity): nil Optional; List pools support this callback
 
 --- Interleaved component names and required flags from Filter.parse (`name`, required, ...).
----@alias ParsedFilter (string|boolean)[]
+---@alias Concord.ParsedFilter (string|boolean)[]
 
 --- Used to filter Entities with specific Components.
 --- A Filter has an associated Pool that can contain any amount of Entities.
 --- `Filter(...)` is equivalent to `Filter.new(...)`.
 ---@docs kind class
----@class Filter
+---@class Concord.Filter
 
 local PATH = (...):gsub('%.[^%.]+$', '')
 
@@ -42,7 +42,7 @@ Filter.__mt = {
 --- Also checks that def.constructor is callable when present, unless onComponent is provided.
 ---@param errorLevel integer Extra stack level added to error reports
 ---@param name? string Name for the Filter. If omitted, errors refer to a World:query filter.
----@param def FilterDefinition Table containing the Filter Definition
+---@param def Concord.FilterDefinition Table containing the Filter Definition
 ---@param onComponent? fun(component: string, reject: string|false) Called with (component, reject) when a component is valid. reject is the stripped Component name when the entry had the Reject Prefix, otherwise false.
 function Filter.validate (errorLevel, name, def, onComponent)
    local filter = "World:query filter"
@@ -75,8 +75,8 @@ end
 --- Entries are stored as name, required pairs: {name, true, name, false, ...}
 --- where true means the Component is required and false means it is rejected.
 ---@param name? string Name for the Filter.
----@param def FilterDefinition Table containing the Filter Definition
----@return ParsedFilter Parsed filter
+---@param def Concord.FilterDefinition Table containing the Filter Definition
+---@return Concord.ParsedFilter Parsed filter
 function Filter.parse (name, def)
    local filter = {}
 
@@ -94,8 +94,8 @@ function Filter.parse (name, def)
 end
 
 --- Returns true if the Entity matches a parsed Filter.
----@param e Entity Entity to check
----@param filter ParsedFilter Parsed filter from Filter.parse
+---@param e Concord.Entity Entity to check
+---@param filter Concord.ParsedFilter Parsed filter from Filter.parse
 ---@return boolean
 function Filter.match (e, filter)
    for i=#filter, 2, -2 do
@@ -114,7 +114,7 @@ local VALID_POOL_TYPES = {table=true, userdata=true, lightuserdata=true, cdata=t
 --- Checks that a custom Pool implements add, remove, has, and clear as callables.
 --- The Pool may be a table, userdata, lightuserdata, or cdata.
 ---@param name string Name of the Filter / Pool
----@param pool Pool Pool returned by a custom constructor
+---@param pool Concord.Pool Pool returned by a custom constructor
 function Filter.isValidPool (name, pool)
    local poolType = type(pool)
    --Check that pool is not nil
@@ -133,9 +133,9 @@ end
 --- Creates a new Filter
 --- If definition.constructor is set, it is called with the definition to create the Pool.
 ---@param name string Name for the Filter.
----@param def FilterDefinition Table containing the Filter Definition
----@return Filter filter The new Filter
----@return Pool pool The associated Pool
+---@param def Concord.FilterDefinition Table containing the Filter Definition
+---@return Concord.Filter filter The new Filter
+---@return Concord.Pool pool The associated Pool
 function Filter.new (name, def)
    local pool
 
@@ -161,7 +161,7 @@ function Filter.new (name, def)
 end
 
 --- Checks if an Entity fulfills the Filter requirements.
----@param e Entity Entity to check
+---@param e Concord.Entity Entity to check
 ---@return boolean
 function Filter:eligible(e)
    return Filter.match(e, self.__filter)
@@ -169,8 +169,8 @@ end
 
 --- Evaluates an Entity against this Filter and updates the Pool.
 --- Adds the Entity if it became eligible, removes it if it no longer is.
----@param e Entity Entity to evaluate
----@return Filter
+---@param e Concord.Entity Entity to evaluate
+---@return Concord.Filter
 function Filter:evaluate (e)
    local has  = self.pool:has(e)
    local eligible = self:eligible(e)
@@ -186,9 +186,9 @@ end
 
 
 --- Adds an Entity to the Pool, if it passes the Filter.
----@param e Entity Entity to add
+---@param e Concord.Entity Entity to add
 ---@param bypass? boolean Whether to bypass the Filter or not.
----@return Filter
+---@return Concord.Filter
 ---@return boolean added Whether the entity was added or not.
 function Filter:add (e, bypass)
    if not bypass and not self:eligible(e) then
@@ -201,8 +201,8 @@ function Filter:add (e, bypass)
 end
 
 --- Removes an Entity from the Pool associated to this Filter.
----@param e Entity Entity to remove
----@return Filter
+---@param e Concord.Entity Entity to remove
+---@return Concord.Filter
 function Filter:remove (e)
    self.pool:remove(e)
    return self
@@ -211,14 +211,14 @@ end
 --- Clears the Pool associated to this Filter.
 --- Arguments are forwarded to the Pool's clear method.
 ---@param ... any Forwarded to pool:clear
----@return Filter
+---@return Concord.Filter
 function Filter:clear (...)
    self.pool:clear(...)
    return self
 end
 
 --- Checks if the Pool associated to this Filter contains the passed Entity.
----@param e Entity Entity to check
+---@param e Concord.Entity Entity to check
 ---@return boolean Whether the Entity exists.
 function Filter:has (e)
    return self.pool:has(e)

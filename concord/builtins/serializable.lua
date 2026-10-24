@@ -1,9 +1,9 @@
 --- Built-in marker Component. Entities with this Component are included in World:serialize.
 --- The Component itself is not serialized.
----@see Entity.SERIALIZE_BY_DEFAULT
----@see World#serialize
+---@see Concord.Entity.SERIALIZE_BY_DEFAULT
+---@see Concord.World#serialize
 ---@docs kind builtin
----@class Serializable : ComponentClass
+---@class Concord.Serializable : Concord.ComponentClass
 
 local PATH = (...):gsub('%.builtins%.[^%.]+$', '')
 

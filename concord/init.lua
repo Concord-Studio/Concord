@@ -1,24 +1,26 @@
 --- A feature-complete ECS library.
 --- Entry point: `local Concord = require("concord")` (adjust the path to your package layout).
---- Exports `Entity`, `Component`, `Components`, `System`, `World`, `Type`, `utils`, and `builtins`.
+--- Exports `Entity`, `Component`, `Components`, `System`, `World`, `Filter`, `List`, `Type`, `utils`, and `builtins`.
 --- Types are callable constructors, e.g. `Concord.World()`, `Concord.Entity(world)`.
 --- Lowercase field names are deprecated compatibility aliases for the uppercase types.
 ---@docs index
 ---@docs kind module
 ---@class Concord
----@field Entity Entity
----@field Component Component
----@field Components Components
----@field System System
----@field World World
----@field Type Type
----@field utils Utils
----@field builtins Builtins
----@field entity Entity @deprecated Use Entity
----@field component Component @deprecated Use Component
----@field components Components @deprecated Use Components
----@field system System @deprecated Use System
----@field world World @deprecated Use World
+---@field Entity Concord.Entity
+---@field Component Concord.Component
+---@field Components Concord.Components
+---@field System Concord.System
+---@field World Concord.World
+---@field Filter Concord.Filter
+---@field List Concord.List
+---@field Type Concord.Type
+---@field utils Concord.Utils
+---@field builtins Concord.Builtins
+---@field entity Concord.Entity @deprecated Use Entity
+---@field component Concord.Component @deprecated Use Component
+---@field components Concord.Components @deprecated Use Components
+---@field system Concord.System @deprecated Use System
+---@field world Concord.World @deprecated Use World
 ---@field _VERSION string
 ---@field _DESCRIPTION string
 ---@field _LICENCE string
@@ -59,6 +61,8 @@ Concord.Component = require(PATH .. ".component")
 Concord.Components = require(PATH .. ".components")
 Concord.System = require(PATH .. ".system")
 Concord.World = require(PATH .. ".world")
+Concord.Filter = require(PATH .. ".filter")
+Concord.List = require(PATH .. ".list")
 Concord.Type = require(PATH .. ".type")
 Concord.utils = require(PATH .. ".utils")
 Concord.builtins = require(PATH .. ".builtins")

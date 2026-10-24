@@ -1,16 +1,16 @@
 --- A pure data container attached to a single Entity.
 --- Component instances are created when an Entity `:give`s the class; populate runs at attach time.
 ---@docs kind class
----@class Component
----@field getName fun(self: Component): string
----@field hasName fun(self: Component): boolean
----@field serialize fun(self: Component): table|nil
----@field deserialize fun(self: Component, data: table): nil
----@field removed fun(self: Component, replaced: boolean): nil
+---@class Concord.Component
+---@field getName fun(self: Concord.Component): string
+---@field hasName fun(self: Concord.Component): boolean
+---@field serialize fun(self: Concord.Component): table|nil
+---@field deserialize fun(self: Concord.Component, data: table): nil
+---@field removed fun(self: Concord.Component, replaced: boolean): nil
 
 --- Registered component type returned by `Component.new` / `Component()`.
 --- `ComponentClass` is the registry entry; instances on entities share callbacks via the class metatable.
----@class ComponentClass : Component
+---@class Concord.ComponentClass : Concord.Component
 ---@module 'concord.component'
 
 local PATH = (...):gsub('%.[^%.]+$', '')
@@ -26,10 +26,10 @@ Component.__mt = {
 --- Creates a new ComponentClass and registers it by name.
 --- `Component("name", populate?)` is equivalent to this function.
 --- Populate receives the new component instance and `:give` / `:ensure` arguments.
----@see Entity#give
+---@see Concord.Entity#give
 ---@param name string Unique name of the ComponentClass
----@param populate? fun(component: Component, ...): nil Function that populates a Component with values
----@return ComponentClass
+---@param populate? fun(component: Concord.Component, ...): nil Function that populates a Component with values
+---@return Concord.ComponentClass
 function Component.new(name, populate)
    if (type(name) ~= "string") then
       Utils.error(2, "bad argument #1 to 'Component.new' (string expected, got %s)", type(name))

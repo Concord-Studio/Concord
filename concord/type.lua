@@ -1,6 +1,6 @@
 --- Runtime type predicates for Concord values (extension code, tooling, defensive checks).
 ---@docs kind module
----@class Type
+---@class Concord.Type
 ---@module 'concord.type'
 
 local Type = {}
