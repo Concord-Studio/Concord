@@ -72,7 +72,7 @@ System.mt = {
 ---@overload fun(definition: table<string, Concord.FilterDefinition>): Concord.SystemClass
 ---@param name? string Name of the System. If the first argument is not a string, it is treated as the definition.
 ---@param definition? table<string, Concord.FilterDefinition> Map of pool names to filter definitions (component names, optional `!` reject entries)
----@return Concord.SystemClass
+---@return Concord.SystemClass system
 function System.new(name, definition)
    if type(name) ~= "string" then
       definition = name or definition
@@ -144,7 +144,7 @@ end
 --- Disabled systems do not receive `World:emit` callbacks until re-enabled.
 ---@see Concord.World#emit
 ---@param enable boolean
----@return Concord.System
+---@return Concord.System system
 function System:setEnabled(enable)
    if (not self.__enabled and enable) then
       self.__enabled = true
@@ -158,13 +158,13 @@ function System:setEnabled(enable)
 end
 
 --- Returns whether the System is enabled (enabled systems receive emit callbacks).
----@return boolean
+---@return boolean enabled
 function System:isEnabled()
    return self.__enabled
 end
 
 --- Returns the World the System is in.
----@return Concord.World
+---@return Concord.World world
 function System:getWorld()
    return self.__world
 end

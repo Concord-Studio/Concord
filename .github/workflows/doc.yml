@@ -34,7 +34,7 @@ jobs:
           node-version: 24
 
       - name: Generate API docs
-        run: pnpm dlx @concord.studio/luals-docs@1.1.0 --out concord.studio/src/content/docs/reference --index-json concord.studio/src/sidebar.json
+        run: pnpm dlx @concord.studio/luals-docs@latest --out concord.studio/src/content/docs/reference --index-json concord.studio/src/sidebar.json
 
       - name: Commit generated docs
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

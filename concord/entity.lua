@@ -40,7 +40,7 @@ end
 --- Creates a new Entity. Optionally queues it to be added to a World.
 --- If Entity.SERIALIZE_BY_DEFAULT is true, the Entity is given a "serializable" Component.
 ---@param world? Concord.World World to add the entity to
----@return Concord.Entity
+---@return Concord.Entity entity
 function Entity.new(world)
 	if world ~= nil and not Type.isWorld(world) then
 		Utils.error(2, "bad argument #1 to 'Entity.new' (world/nil expected, got %s)", type(world))
@@ -149,7 +149,7 @@ end
 --- Pass an existing Component instance (already populated, not attached to an entity). Skips name and populate arguments.
 ---@param name string Name of the ComponentClass
 ---@param ... any Additional arguments to pass to the Component's populate function
----@return Concord.Entity
+---@return Concord.Entity entity
 --[[@usage
 Concord.Component("position", function (component, x, y)
   component.x = x or 0
@@ -168,7 +168,7 @@ end
 --- Pass an existing Component instance (already populated, not attached to an entity). Skips name and populate arguments.
 ---@param name string Name of the ComponentClass
 ---@param ... any Additional arguments to pass to the Component's populate function
----@return Concord.Entity
+---@return Concord.Entity entity
 function Entity:ensure(name, ...)
 	return giveComponent(self, true, name, ...)
 end
@@ -176,7 +176,7 @@ end
 --- Removes a Component from an Entity.
 ---@see Concord.Component#removed
 ---@param name string Name of the ComponentClass to remove
----@return Concord.Entity
+---@return Concord.Entity entity
 function Entity:remove(name)
 	local ok, componentClass = Components.try(name)
 
@@ -192,7 +192,7 @@ end
 --- Assembles an Entity by calling `assemblage(self, ...)` and returning `self`.
 ---@param assemblage fun(entity: Concord.Entity, ...) Function that will assemble an entity
 ---@param ... any Additional arguments to pass to the assemblage function.
----@return Concord.Entity
+---@return Concord.Entity entity
 function Entity:assemble(assemblage, ...)
 	if type(assemblage) ~= "function" then
 		Utils.error(2, "bad argument #1 to 'Entity:assemble' (function expected, got %s)", type(assemblage))
@@ -205,7 +205,7 @@ end
 
 --- Destroys the Entity.
 --- Queues removal from its World if it's in one. The Entity stays in the World until the next flush.
----@return Concord.Entity
+---@return Concord.Entity entity
 function Entity:destroy()
 	if self.__world then
 		self.__world:removeEntity(self)
@@ -225,7 +225,7 @@ end
 
 --- Returns true if the Entity has a Component.
 ---@param name string Name of the ComponentClass to check
----@return boolean
+---@return boolean has
 function Entity:has(name)
 	local ok, componentClass = Components.try(name)
 
@@ -238,7 +238,7 @@ end
 
 --- Gets a Component from the Entity.
 ---@param name string Name of the ComponentClass to get
----@return Concord.Component|nil The Component, or nil if the Entity does not have it
+---@return Concord.Component|nil component The Component, or nil if the Entity does not have it
 function Entity:get(name)
 	local ok, componentClass = Components.try(name)
 
@@ -253,7 +253,7 @@ end
 --- This is primarily the Entity's Components. Extra non-component fields are also copied.
 --- Mutating a copied Component still mutates the Entity's Component.
 ---@param output? table Table to copy into. A new table is created if omitted.
----@return table
+---@return table components
 function Entity:getComponents(output)
 	output = output or {}
 	local components = Utils.shallowCopy(self, output)
@@ -265,13 +265,13 @@ end
 
 --- Returns true if the Entity has been assigned a World.
 --- True as soon as addition is queued, and remains true until removal is flushed.
----@return boolean
+---@return boolean inWorld
 function Entity:inWorld()
 	return self.__world and true or false
 end
 
 --- Returns the World the Entity is in, or nil when not in a world.
----@return Concord.World|nil
+---@return Concord.World|nil world
 function Entity:getWorld()
 	return self.__world
 end
@@ -281,7 +281,7 @@ end
 --- each with `__name` plus fields from `Component:serialize`. Components that return nil from serialize are omitted.
 ---@see Concord.SerializedWorld
 ---@param ignoreKey? boolean If true, the key Component is omitted (World:serialize uses the related flag `ignoreKeys`)
----@return table Serialized Entity data
+---@return table data Serialized Entity data
 function Entity:serialize(ignoreKey)
 	local data = {}
 

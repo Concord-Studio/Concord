@@ -4,6 +4,7 @@
   "indexJson": "../concord.studio/src/sidebar.json",
   "templatesDir": "docs-templates",
   "routePrefix": "api",
+  "namespace": "Concord",
   "groups": [
     { "label": "Classes", "kinds": ["class"] },
     { "label": "Sub-modules", "kinds": ["module"] },

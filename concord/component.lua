@@ -29,7 +29,7 @@ Component.__mt = {
 ---@see Concord.Entity#give
 ---@param name string Unique name of the ComponentClass
 ---@param populate? fun(component: Concord.Component, ...): nil Function that populates a Component with values
----@return Concord.ComponentClass
+---@return Concord.ComponentClass component
 function Component.new(name, populate)
    if (type(name) ~= "string") then
       Utils.error(2, "bad argument #1 to 'Component.new' (string expected, got %s)", type(name))
@@ -91,13 +91,13 @@ function Component:__initialize(entity, ...)
 end
 
 --- Returns true if the Component has a name.
----@return boolean
+---@return boolean hasName
 function Component:hasName()
    return self.__name and true or false
 end
 
 --- Returns the name of the Component.
----@return string
+---@return string name
 function Component:getName()
    return self.__name
 end
@@ -110,7 +110,7 @@ function Component:removed(replaced) -- luacheck: ignore
 end
 
 --- Callback for when the Component is serialized as part of an Entity.
----@return table|nil Serialized data, or nil to omit this Component
+---@return table|nil data Serialized data, or nil to omit this Component
 function Component:serialize()
    local data = Utils.shallowCopy(self, {})
 

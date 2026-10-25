@@ -11,7 +11,7 @@ List.__mt = {
 }
 
 --- Creates a new List.
----@return Concord.List
+---@return Concord.List list
 function List.new()
    return setmetatable({
       size = 0,
@@ -22,7 +22,7 @@ end
 --- Object must be of reference type
 --- Object may not be the string 'size', 'onAdded' or 'onRemoved'
 ---@param obj any Object to add
----@return Concord.List
+---@return Concord.List list
 function List:add(obj)
    local size = self.size + 1
 
@@ -36,7 +36,7 @@ end
 
 --- Removes an object from the List.
 ---@param obj any Object to remove
----@return Concord.List|nil Returns self if removed; nil if the object was not in the List
+---@return Concord.List|nil list Returns self if removed; nil if the object was not in the List
 function List:remove(obj)
    local index = self[obj]
    if not index then return end
@@ -62,7 +62,7 @@ end
 
 --- Clears the List completely.
 --- Does not call onRemoved.
----@return Concord.List
+---@return Concord.List list
 function List:clear()
    for i = 1, self.size do
       local o = self[i]
@@ -78,14 +78,14 @@ end
 
 --- Returns true if the List has the object.
 ---@param obj any Object to check for
----@return boolean
+---@return boolean has
 function List:has(obj)
    return self[obj] and true or false
 end
 
 --- Returns the object at an index.
 ---@param i integer Index to get from
----@return any Object at the index
+---@return any obj Object at the index
 function List:get(i)
    return self[i]
 end
@@ -93,7 +93,7 @@ end
 --- Returns the index of an object in the List.
 --- Errors if the object is not in the List.
 ---@param obj any Object to get index of
----@return integer index of object in the List.
+---@return integer index Index of the object in the List.
 function List:indexOf(obj)
    if (not self[obj]) then
       error("bad argument #1 to 'List:indexOf' (Object was not in List)", 2)
@@ -105,7 +105,7 @@ end
 --- Sorts the List in place, using the order function.
 --- The order function is passed to table.sort internally so documentation on table.sort can be used as reference.
 ---@param order fun(a: any, b: any): boolean Function that takes two items (a and b) and returns true if a should go before b.
----@return Concord.List
+---@return Concord.List list
 function List:sort(order)
    table.sort(self, order)
 

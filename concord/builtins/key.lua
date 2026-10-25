@@ -31,7 +31,7 @@ function Key:deserialize (data)
 end
 
 --- Returns the key value.
----@return string|number The Entity's key
+---@return string|number key The Entity's key
 function Key.__mt:__call()
   return self.value
 end

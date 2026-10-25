@@ -8,7 +8,7 @@ local Type = {}
 --- Returns true if the value is a function or has a `__call` metamethod.
 --- Use before treating a value as a populate function, pool constructor, or generator.
 ---@param t any Object to check
----@return boolean
+---@return boolean callable
 function Type.isCallable(t)
    if type(t) == "function" then return true end
 
@@ -21,7 +21,7 @@ end
 --- Returns true if the value is an Entity instance.
 --- Use when accepting arbitrary tables that might be entities (e.g. world APIs, serializers).
 ---@param t any Object to check
----@return boolean
+---@return boolean isEntity
 function Type.isEntity(t)
    return type(t) == "table" and t.__isEntity or false
 end
@@ -29,7 +29,7 @@ end
 --- Returns true if the value is a registered ComponentClass (not a component instance).
 --- Use before `World`-level APIs that expect a class, or when validating `Component.new` results.
 ---@param t any Object to check
----@return boolean
+---@return boolean isComponentClass
 function Type.isComponentClass(t)
    return type(t) == "table" and t.__isComponentClass or false
 end
@@ -37,7 +37,7 @@ end
 --- Returns true if the value is a Component instance attached to an entity.
 --- Use when iterating entity fields or handling `Entity:give` component-instance overload.
 ---@param t any Object to check
----@return boolean
+---@return boolean isComponent
 function Type.isComponent(t)
    return type(t) == "table" and t.__isComponent or false
 end
@@ -45,14 +45,14 @@ end
 --- Returns true if the value is a SystemClass template (not a live system instance).
 --- Use before `World:addSystem`, `World:hasSystem`, or `World:getSystem`.
 ---@param t any Object to check
----@return boolean
+---@return boolean isSystemClass
 function Type.isSystemClass(t)
    return type(t) == "table" and t.__isSystemClass or false
 end
 
 --- Returns true if the value is a System instance belonging to a World.
 ---@param t any Object to check
----@return boolean
+---@return boolean isSystem
 function Type.isSystem(t)
    return type(t) == "table" and t.__isSystem or false
 end
@@ -60,14 +60,14 @@ end
 --- Returns true if the value is a World instance.
 --- Use when validating optional world arguments to `Entity.new` or custom helpers.
 ---@param t any Object to check
----@return boolean
+---@return boolean isWorld
 function Type.isWorld(t)
    return type(t) == "table" and t.__isWorld or false
 end
 
 --- Returns true if the value is a Filter instance (internal pool driver; rarely needed in game code).
 ---@param t any Object to check
----@return boolean
+---@return boolean isFilter
 function Type.isFilter(t)
    return type(t) == "table" and t.__isFilter or false
 end

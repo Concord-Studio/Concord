@@ -76,7 +76,7 @@ end
 --- where true means the Component is required and false means it is rejected.
 ---@param name? string Name for the Filter.
 ---@param def Concord.FilterDefinition Table containing the Filter Definition
----@return Concord.ParsedFilter Parsed filter
+---@return Concord.ParsedFilter filter Parsed filter
 function Filter.parse (name, def)
    local filter = {}
 
@@ -96,7 +96,7 @@ end
 --- Returns true if the Entity matches a parsed Filter.
 ---@param e Concord.Entity Entity to check
 ---@param filter Concord.ParsedFilter Parsed filter from Filter.parse
----@return boolean
+---@return boolean matches
 function Filter.match (e, filter)
    for i=#filter, 2, -2 do
       local match = filter[i - 0]
@@ -162,7 +162,7 @@ end
 
 --- Checks if an Entity fulfills the Filter requirements.
 ---@param e Concord.Entity Entity to check
----@return boolean
+---@return boolean eligible
 function Filter:eligible(e)
    return Filter.match(e, self.__filter)
 end
@@ -170,7 +170,7 @@ end
 --- Evaluates an Entity against this Filter and updates the Pool.
 --- Adds the Entity if it became eligible, removes it if it no longer is.
 ---@param e Concord.Entity Entity to evaluate
----@return Concord.Filter
+---@return Concord.Filter filter
 function Filter:evaluate (e)
    local has  = self.pool:has(e)
    local eligible = self:eligible(e)
@@ -188,7 +188,7 @@ end
 --- Adds an Entity to the Pool, if it passes the Filter.
 ---@param e Concord.Entity Entity to add
 ---@param bypass? boolean Whether to bypass the Filter or not.
----@return Concord.Filter
+---@return Concord.Filter filter
 ---@return boolean added Whether the entity was added or not.
 function Filter:add (e, bypass)
    if not bypass and not self:eligible(e) then
@@ -202,7 +202,7 @@ end
 
 --- Removes an Entity from the Pool associated to this Filter.
 ---@param e Concord.Entity Entity to remove
----@return Concord.Filter
+---@return Concord.Filter filter
 function Filter:remove (e)
    self.pool:remove(e)
    return self
@@ -211,7 +211,7 @@ end
 --- Clears the Pool associated to this Filter.
 --- Arguments are forwarded to the Pool's clear method.
 ---@param ... any Forwarded to pool:clear
----@return Concord.Filter
+---@return Concord.Filter filter
 function Filter:clear (...)
    self.pool:clear(...)
    return self
@@ -219,13 +219,13 @@ end
 
 --- Checks if the Pool associated to this Filter contains the passed Entity.
 ---@param e Concord.Entity Entity to check
----@return boolean Whether the Entity exists.
+---@return boolean exists Whether the Entity exists.
 function Filter:has (e)
    return self.pool:has(e)
 end
 
 --- Gets the name of the Filter
----@return string
+---@return string name
 function Filter:getName()
    return self.__name
 end

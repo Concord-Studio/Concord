@@ -14,14 +14,14 @@ Components.__REJECT_MATCH = "^(%"..Components.__REJECT_PREFIX.."?)(.+)"
 
 --- Returns true if the container has the ComponentClass with the specified name
 ---@param name string Name of the ComponentClass to check
----@return boolean
+---@return boolean has
 function Components.has(name)
    return rawget(Components, name) and true or false
 end
 
 --- Prefix a component's name with the currently set Reject Prefix
 ---@param name string Name of the ComponentClass to reject
----@return string
+---@return string name
 function Components.reject(name)
    local ok, err = Components.try(name)
 
@@ -60,7 +60,7 @@ end
 
 --- Returns the ComponentClass with the specified name
 ---@param name string Name of the ComponentClass to get
----@return Concord.ComponentClass
+---@return Concord.ComponentClass component
 function Components.get(name)
    local ok, value = Components.try(name)
 

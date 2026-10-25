@@ -45,7 +45,7 @@ end
 --- Creates a new World.
 ---@see Concord.World#addSystems
 ---@param ... Concord.SystemClass SystemClasses of Systems to add
----@return Concord.World The new World
+---@return Concord.World world The new World
 function World.new(...)
    local world = setmetatable({
       __entities = List(),
@@ -89,7 +89,7 @@ end
 --- The Entity's world is set immediately. The Entity is not in getEntities()
 --- and is not evaluated by Systems until the next flush.
 ---@param e Concord.Entity Entity to add
----@return Concord.World
+---@return Concord.World world
 function World:addEntity(e)
    if not Type.isEntity(e) then
       Utils.error(2, "bad argument #1 to 'World:addEntity' (Entity expected, got %s)", type(e))
@@ -116,11 +116,11 @@ end
 --- already flushed Entities are visible immediately.
 ---@overload fun(self: Concord.World, def: Concord.FilterDefinition, onMatch: fun(e: Concord.Entity)): nil
 --- Pass a function as onMatch. It is called once per matching Entity. Nothing is returned.
----@overload fun(self: Concord.World, def: Concord.FilterDefinition, onMatch: table): table
+---@overload fun(self: Concord.World, def: Concord.FilterDefinition, onMatch?: table): table
 --- Collect matches into a table and return it. onMatch is optional; when omitted, a new empty table is used.
 ---@param def Concord.FilterDefinition Filter definition (component names, with ! prefix to reject)
 ---@param onMatch? fun(e: Concord.Entity)|table Callback for each match, or a table to fill
----@return table|nil The list of matches, or nil if onMatch was a callback
+---@return table|nil matches The list of matches, or nil if onMatch was a callback
 function World:query(def, onMatch)
    local filter = Filter.parse(nil, def)
 
@@ -146,7 +146,7 @@ end
 --- If the Entity has a key Component, it is removed first.
 --- The Entity remains in the World until the next flush.
 ---@param e Concord.Entity Entity to remove
----@return Concord.World
+---@return Concord.World world
 function World:removeEntity(e)
    if not Type.isEntity(e) then
       Utils.error(2, "bad argument #1 to 'World:removeEntity' (Entity expected, got %s)", type(e))
@@ -175,14 +175,14 @@ end
 --- Returns whether a Flush can currently be performed.
 --- Flushing is forbidden while a Flush is already in progress
 --- (for example from World:onEntityAdded / Pool:onAdded).
----@return boolean
+---@return boolean canFlush
 function World:canFlush()
    return not self.__flushing
 end
 
 --- Applies queued Entity additions, removals, and dirty reevaluations.
 --- Only the queued buffers are processed, not every Entity in the World.
----@return Concord.World
+---@return Concord.World world
 function World:flush()
    if not self:canFlush() then
       Utils.error(2, "bad call to 'World:flush' (cannot flush during a flush)")
@@ -305,7 +305,7 @@ end
 --- Entities already in the World are evaluated against the System's Filters.
 ---@see Concord.World#emit
 ---@param systemClass Concord.SystemClass SystemClass of System to add
----@return Concord.World
+---@return Concord.World world
 function World:addSystem(systemClass)
    local ok, err = tryAddSystem(self, systemClass)
 
@@ -321,7 +321,7 @@ end
 ---@see Concord.World#addSystem
 ---@see Concord.World#emit
 ---@param ... Concord.SystemClass SystemClasses of Systems to add
----@return Concord.World
+---@return Concord.World world
 function World:addSystems(...)
    for i = 1, select("#", ...) do
       local systemClass = select(i, ...)
@@ -337,7 +337,7 @@ end
 
 --- Returns whether the World has a System.
 ---@param systemClass Concord.SystemClass SystemClass of System to check for
----@return boolean
+---@return boolean has
 function World:hasSystem(systemClass)
    if not Type.isSystemClass(systemClass) then
       Utils.error(2, "bad argument #1 to 'World:hasSystem' (SystemClass expected, got %s)", type(systemClass))
@@ -348,7 +348,7 @@ end
 
 --- Gets a System from the World.
 ---@param systemClass Concord.SystemClass SystemClass of System to get
----@return Concord.System|nil The system instance, or nil if the class was not added
+---@return Concord.System|nil system The system instance, or nil if the class was not added
 function World:getSystem(systemClass)
    if not Type.isSystemClass(systemClass) then
       Utils.error(2, "bad argument #1 to 'World:getSystem' (SystemClass expected, got %s)", type(systemClass))
@@ -367,7 +367,7 @@ end
 --- afterEmit is called after listeners when present.
 ---@param functionName string Event name, or `"SystemName.event"` to call only that System
 ---@param ... any Parameters passed to System's functions
----@return Concord.World
+---@return Concord.World world
 function World:emit(functionName, ...)
    local shouldFlush = self.__emitSDepth == 0 and self:canFlush()
 
@@ -432,7 +432,7 @@ end
 ---@see Concord.World#emit
 ---@param functionName string Name of functions to call.
 ---@param ... any Parameters passed to System's functions
----@return Concord.World
+---@return Concord.World world
 function World:emitNoFlush(functionName, ...)
    local flushing = self.__flushing
    self.__flushing = true
@@ -444,7 +444,7 @@ end
 --- Removes all Entities from the World and flushes.
 --- Entities that were queued to be added are detached immediately without
 --- onEntityRemoved. Already flushed Entities are removed through the normal flush.
----@return Concord.World
+---@return Concord.World world
 function World:clear()
    for i = 1, self.__entities.size do
       self:removeEntity(self.__entities[i])
@@ -462,13 +462,13 @@ function World:clear()
 end
 
 --- Returns the List of flushed Entities in the World.
----@return Concord.List
+---@return Concord.List entities
 function World:getEntities()
    return self.__entities
 end
 
 --- Returns the List of Systems in the World.
----@return Concord.List
+---@return Concord.List systems
 function World:getSystems()
    return self.__systems
 end
@@ -477,7 +477,7 @@ end
 --- Flushes first. Only Entities with a serializable Component are included.
 ---@see Concord.Entity#serialize
 ---@param ignoreKeys? boolean If true, omits keys when calling `Entity:serialize` (Entity parameter name: `ignoreKey`)
----@return Concord.SerializedWorld Serialized world data
+---@return Concord.SerializedWorld data Serialized world data
 function World:serialize(ignoreKeys)
    self:flush()
 
@@ -501,7 +501,7 @@ end
 ---@param data Concord.SerializedWorld Serialized world data
 ---@param startClean? boolean If true, existing Entities are cleared first
 ---@param ignoreGenerator? boolean If true, the World's key generator state is left unchanged
----@return Concord.World
+---@return Concord.World world
 function World:deserialize(data, startClean, ignoreGenerator)
    if startClean then
       self:clear()
@@ -539,7 +539,7 @@ end
 --- Sets the function used to generate Entity keys.
 ---@param generator fun(state: any): string|number, any Callable that receives the current state and returns key, newState
 ---@param initialState any Initial state passed to the generator
----@return Concord.World
+---@return Concord.World world
 function World:setKeyGenerator(generator, initialState)
    if not Type.isCallable(generator) then
       Utils.error(2, "bad argument #1 to 'World:setKeyGenerator' (function expected, got %s)", type(generator))
@@ -588,7 +588,7 @@ end
 
 --- Gets an Entity by its key.
 ---@param key string|number Key to look up
----@return Concord.Entity|nil
+---@return Concord.Entity|nil entity
 function World:getEntityByKey(key)
    return self.__hash.entities[key]
 end
@@ -597,7 +597,7 @@ end
 --- Typical uses: services, asset handles, or frame context accessible from Systems.
 ---@param name string Name of the resource
 ---@param resource any Resource to set
----@return Concord.World
+---@return Concord.World world
 function World:setResource(name, resource)
   self.__resources[name] = resource
   return self
@@ -605,7 +605,7 @@ end
 
 --- Gets a named resource from the World.
 ---@param name string Name of the resource
----@return any The resource, or nil if none was set
+---@return any resource The resource, or nil if none was set
 function World:getResource(name)
   return self.__resources[name]
 end
@@ -630,7 +630,7 @@ end
 ---@param functionName string Name of the event being emitted
 ---@param listeners? table Listeners registered for this event, or nil
 ---@param ... any Parameters passed to World:emit
----@return boolean? Truthy to skip listeners
+---@return boolean? skip Truthy to skip listeners
 function World:beforeEmit(systemName, functionName, listeners, ...) -- luacheck: ignore
 end
 
@@ -651,7 +651,7 @@ end
 ---@param system Concord.System System that is being called
 ---@param eventName string Name of the event being emitted
 ---@param ... any Parameters passed to World:emit
----@return boolean? Truthy to skip the System listener and afterSystemCallback
+---@return boolean? skip Truthy to skip the System listener and afterSystemCallback
 function World:beforeSystemCallback(system, eventName, ...) -- luacheck: ignore
 end
 
