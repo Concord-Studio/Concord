@@ -6,7 +6,12 @@
 ---@docs kind class
 ---@class Concord.World
 ---@field ENABLE_OPTIMIZATION boolean When true, shallow-copies class methods onto each instance for faster access (default true)
----@field addEntity fun(self: Concord.World, e: Concord.Entity): Concord.World
+local World = {
+   ENABLE_OPTIMIZATION = true,
+}
+World.__mt = {
+   __index = World,
+}
 
 --- Payload from `World:serialize`, passed to `World:deserialize`.
 --- `generator` restores key-generator state. Numeric indices are per-entity tables from `Entity:serialize` (see Entity for shape).
@@ -29,12 +34,6 @@ local Type       = require(PATH..".type")
 local List       = require(PATH..".list")
 local Utils      = require(PATH..".utils")
 
-local World = {
-   ENABLE_OPTIMIZATION = true,
-}
-World.__mt = {
-   __index = World,
-}
 
 local defaultGenerator = function (state)
    local current = state
