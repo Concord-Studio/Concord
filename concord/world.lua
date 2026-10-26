@@ -6,6 +6,12 @@
 ---@docs kind class
 ---@class Concord.World
 ---@field ENABLE_OPTIMIZATION boolean When true, shallow-copies class methods onto each instance for faster access (default true)
+---@field private __entities Concord.List Flushed Entities in the World
+---@field private __systems Concord.List Systems registered on the World
+---@field private __systemLookup table<Concord.SystemClass, Concord.System> SystemClass to live System instance
+---@field private __hash Concord.WorldKeyHash Entity key registry
+---@field private __resources table<string, any> Named singleton resources
+---@field private __events table<string, Concord.WorldEventListener[]> Listeners per callback name
 local World = {
    ENABLE_OPTIMIZATION = true,
 }
@@ -18,6 +24,18 @@ World.__mt = {
 ---@class Concord.SerializedWorld
 ---@field generator any Snapshot of the World's key-generator state
 ---@field [integer] table Serialized Entity data from `Entity:serialize`
+
+--- Registered handler invoked by `World:emit` for a callback name on a System instance.
+---@class Concord.WorldEventListener
+---@field system Concord.System System instance that owns the callback
+---@field callback fun(system: Concord.System, ...: any) Function from the SystemClass (first arg is the live system)
+
+--- Internal key registry and generator state for `World:getEntityByKey` / built-in Key.
+---@class Concord.WorldKeyHash
+---@field state any Current generator state
+---@field generator fun(state: any): string|number, any Key generator
+---@field keys table<Concord.Entity, string|number> Entity to key
+---@field entities table<string|number, Concord.Entity> Key to Entity
 
 ---@module 'concord.world'
 
@@ -402,7 +420,7 @@ function World:emit(functionName, ...)
          local listener = listeners[i]
          local system = listener.system
 
-         if system.__enabled and (not systemName or system.__name == systemName) then
+         if system:isEnabled() and (not systemName or system:getName() == systemName) then
             self.__ignoreEmits = true
             local ignoreListener = self:beforeSystemCallback(system, eventName, ...)
             self.__ignoreEmits = false

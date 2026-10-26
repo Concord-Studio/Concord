@@ -20,11 +20,22 @@
 ---@docs kind class
 ---@class Concord.System
 ---@field ENABLE_OPTIMIZATION boolean When true, shallow-copies class methods onto each instance for faster access (default true)
+---@field private __enabled boolean Whether emit callbacks are delivered to this instance
+---@field private __filters Concord.Filter[] Pool filters owned by the System
+---@field private __world Concord.World World this System was added to
+---@field private __name? string Name from `System.new`, when set (also on class; may be copied onto instance)
+---@field private __isSystem boolean Type tag for `Type.isSystem`
+---@field isEnabled fun(self: Concord.System): boolean
+---@field getName fun(self: Concord.System): string|nil
+---@field getWorld fun(self: Concord.System): Concord.World
+---@field setEnabled fun(self: Concord.System, enable: boolean): Concord.System
 
 --- Registered system type returned by `System.new` / `System()`.
 --- Call the class with a World to construct a live system instance (`SystemClass(world)`).
 --- Filter definition keys become dynamic pool fields on each instance (not listed on this type).
 ---@class Concord.SystemClass : Concord.System
+---@field private __definition table<string, Concord.FilterDefinition> Filter definitions for pools
+---@field private __isSystemClass boolean Type tag for `Type.isSystemClass`
 
 local PATH = (...):gsub('%.[^%.]+$', '')
 
@@ -161,6 +172,12 @@ end
 ---@return boolean enabled
 function System:isEnabled()
    return self.__enabled
+end
+
+--- Returns the name passed to `System.new("Name", ...)`, or nil if the System was created without a name.
+---@return string|nil name
+function System:getName()
+   return self.__name
 end
 
 --- Returns the World the System is in.

@@ -4,6 +4,10 @@
 ---@docs kind class
 ---@class Concord.List
 ---@field size integer Number of items in the List
+---@field add fun(self: Concord.List, obj: any): Concord.List
+---@field remove fun(self: Concord.List, obj: any): Concord.List|nil
+---@field clear fun(self: Concord.List): Concord.List
+---@field has fun(self: Concord.List, obj: any): boolean
 
 local List = {}
 List.__mt = {
